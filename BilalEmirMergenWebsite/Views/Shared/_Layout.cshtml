@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Bilal Emir Mergen - Portfolyo, projeler ve Medium tarzı kişisel blog yazıları." />
+    <title>@ViewData["Title"] - Bilal Emir Mergen | Portfolyo & Blog</title>
+    
+    <!-- Custom styling -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <a href="/" class="logo">Bilal Emir Mergen</a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">Portfolyo & Blog</a>
+                
+                @if (Context.Session.GetString("AdminUser") != null)
+                {
+                    <a href="/admin/dashboard" class="btn-admin">
+                        <i data-lucide="layout-dashboard" style="width: 14px; height: 14px; margin-right: 5px; display: inline-block; vertical-align: middle;"></i>
+                        Dashboard
+                    </a>
+                }
+                else
+                {
+                    <a href="/admin/login" class="btn-admin">Admin Girişi</a>
+                }
+            </nav>
+        </header>
+
+        <main style="padding: 2rem 0;">
+            @RenderBody()
+        </main>
+
+        <footer class="footer">
+            <div>&copy; @DateTime.Now.Year Bilal Emir Mergen. Tüm hakları saklıdır.</div>
+            <div style="display: flex; gap: 1rem;">
+                <a href="https://github.com/Bilalmrgn" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="nav-link">LinkedIn</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

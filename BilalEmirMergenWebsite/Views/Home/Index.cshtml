@@ -1,0 +1,120 @@
+@model BilalEmirMergenWebsite.Controllers.HomeViewModel
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<!-- Demo Mode Alert Banner -->
+@if (ViewBag.IsDemo == true)
+{
+    <div class="banner">
+        <span>🚀 <strong>Demo Modu Aktif:</strong> Supabase bilgileri girilmediği için geçici bellek veritabanı (Mock) kullanılıyor.</span>
+        <span style="font-size: 0.8rem; opacity: 0.8;">(Verileriniz uygulama kapanana kadar hafızada saklanır)</span>
+    </div>
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-glow"></div>
+    <h1 class="hero-title">Merhaba, Ben Bilal Emir Mergen</h1>
+    <p class="hero-subtitle">
+        Full-Stack Web Geliştirici & Yazar. Teknolojik yenilikleri takip ediyor, 
+        modern web çözümleri üretiyor ve öğrendiklerimi makalelerimle paylaşıyorum.
+    </p>
+    <div class="social-links">
+        <a href="https://github.com/Bilalmrgn" target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub">
+            <i data-lucide="github"></i>
+        </a>
+        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="LinkedIn">
+            <i data-lucide="linkedin"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Projects Showcase -->
+<section class="section-container">
+    <h2 class="section-title">
+        <i data-lucide="briefcase" style="color: var(--secondary); margin-right: 8px;"></i>
+        Projelerim
+    </h2>
+
+    @if (!Model.Projects.Any())
+    {
+        <div class="glass-card" style="text-align: center; padding: 2rem;">
+            <p style="color: var(--text-muted);">Henüz proje eklenmemiş.</p>
+        </div>
+    }
+    else
+    {
+        <div class="projects-grid">
+            @foreach (var proj in Model.Projects)
+            {
+                <div class="glass-card project-card">
+                    @if (!string.IsNullOrEmpty(proj.ImageUrl))
+                    {
+                        <img src="@proj.ImageUrl" alt="@proj.Title" class="project-image" onerror="this.src='https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80'" />
+                    }
+                    <h3 class="project-title">@proj.Title</h3>
+                    <p class="project-desc">@proj.Description</p>
+                    
+                    @if (proj.Tags != null && proj.Tags.Any())
+                    {
+                        <div class="project-tags">
+                            @foreach (var tag in proj.Tags)
+                            {
+                                <span class="project-tag">@tag</span>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(proj.ProjectUrl))
+                    {
+                        <a href="@proj.ProjectUrl" target="_blank" rel="noopener noreferrer" class="project-link">
+                            Projeyi İncele <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    }
+</section>
+
+<!-- Blog Section -->
+<section class="section-container" style="border-top: 1px solid var(--card-border);">
+    <h2 class="section-title">
+        <i data-lucide="book-open" style="color: var(--primary); margin-right: 8px;"></i>
+        Yazılarım
+    </h2>
+
+    @if (!Model.Articles.Any())
+    {
+        <div class="glass-card" style="text-align: center; padding: 2rem;">
+            <p style="color: var(--text-muted);">Henüz blog yazısı eklenmemiş.</p>
+        </div>
+    }
+    else
+    {
+        <div class="blog-feed">
+            @foreach (var post in Model.Articles)
+            {
+                <a href="/blog/@post.Slug" class="glass-card blog-card">
+                    @if (!string.IsNullOrEmpty(post.CoverImage))
+                    {
+                        <img src="@post.CoverImage" alt="@post.Title" class="blog-card-image" onerror="this.src='https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80'" />
+                    }
+                    <div class="blog-card-content">
+                        <div class="blog-card-meta">
+                            <span>@post.CreatedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</span>
+                            <span style="margin: 0 8px;">•</span>
+                            <span>
+                                <i data-lucide="eye" style="width: 14px; height: 14px; margin-right: 4px; display: inline-block; vertical-align: middle;"></i> 
+                                @post.Views okuma
+                            </span>
+                        </div>
+                        <h3 class="blog-card-title">@post.Title</h3>
+                        <p class="blog-card-summary">@post.Summary</p>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</section>

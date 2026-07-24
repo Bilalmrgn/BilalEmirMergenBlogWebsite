@@ -1,0 +1,358 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var activeTab = ViewBag.ActiveTab as string ?? "analytics";
+}
+
+<div class="admin-header-row">
+    <div>
+        <h1 style="font-size: 2.5rem;">Yönetici Paneli</h1>
+        <p style="color: var(--text-muted);">Giriş Yapıldı: @ViewBag.UserEmail</p>
+    </div>
+    <a href="/admin/logout" class="btn-danger">
+        <i data-lucide="log-out" style="width: 14px; height: 14px; margin-right: 4px; display: inline-block; vertical-align: middle;"></i>
+        Çıkış Yap
+    </a>
+</div>
+
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="/admin/dashboard?tab=analytics" class="sidebar-btn @(activeTab == "analytics" ? "active" : "")">
+            <i data-lucide="bar-chart-2"></i> Analiz & İstatistikler
+        </a>
+        <a href="/admin/dashboard?tab=articles" class="sidebar-btn @(activeTab == "articles" ? "active" : "")">
+            <i data-lucide="file-text"></i> Makaleleri Yönet
+        </a>
+        <a href="/admin/dashboard?tab=projects" class="sidebar-btn @(activeTab == "projects" ? "active" : "")">
+            <i data-lucide="briefcase"></i> Projeleri Yönet
+        </a>
+    </div>
+
+    <!-- Content Panel -->
+    <div class="glass-card" style="padding: 2rem;">
+        
+        <!-- ANALYTICS TAB -->
+        @if (activeTab == "analytics")
+        {
+            <div>
+                <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;">Web Sitesi Analizleri</h2>
+                <div class="stats-grid">
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Toplam Ziyaret</div>
+                        <div class="stat-value">@Model.SiteVisits</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Makale Okunma</div>
+                        <div class="stat-value">@Model.TotalViews</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Toplam Makale</div>
+                        <div class="stat-value">@Model.ArticlesCount</div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; margin-top: 2rem;">Okunma Sayılarına Göre Makaleler</h3>
+                <div class="admin-list">
+                    @foreach (var post in Model.Articles)
+                    {
+                        <div class="admin-item" style="background: rgba(255, 255, 255, 0.01);">
+                            <div>
+                                <div class="admin-item-title">@post.Title</div>
+                                <div class="admin-item-meta">@post.CreatedAt.ToString("dd.MM.yyyy")</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: bold; color: var(--primary);">
+                                <i data-lucide="eye" style="width: 16px; height: 16px;"></i> @post.Views
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- ARTICLES TAB -->
+        @if (activeTab == "articles")
+        {
+            <div id="articles-list-view">
+                <div class="admin-header-row" style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.5rem;">Makaleler</h2>
+                    <button class="btn-primary" onclick="showCreateArticleForm()">
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Yeni Makale Ekle
+                    </button>
+                </div>
+
+                <div class="admin-list">
+                    @if (!Model.Articles.Any())
+                    {
+                        <div style="color: var(--text-muted); text-align: center; padding: 2rem;">Henüz makale bulunmuyor.</div>
+                    }
+                    else
+                    {
+                        @foreach (var post in Model.Articles)
+                        {
+                            <div class="admin-item" id="article-row-@post.Id">
+                                <div>
+                                    <div class="admin-item-title">@post.Title</div>
+                                    <div class="admin-item-meta">
+                                        <span>Slug: /blog/@post.Slug</span>
+                                        <span style="margin: 0 8px;">|</span>
+                                        <span>Okunma: @post.Views</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-secondary" style="padding: 0.5rem;" onclick="editArticle('@post.Id', '@JavaScriptStringEncode(post.Title)', '@JavaScriptStringEncode(post.Slug)', '@JavaScriptStringEncode(post.Summary)', '@JavaScriptStringEncode(post.CoverImage)', '@JavaScriptStringEncode(post.Content)')">
+                                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                    <form method="post" action="/admin/article/delete/@post.Id" style="display: inline;" onsubmit="return confirm('Bu makaleyi silmek istediğinizden emin misiniz?');">
+                                        <button type="submit" class="btn-danger" style="padding: 0.5rem;">
+                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Write/Edit Article Form (Hidden by default) -->
+            <div id="article-form-view" style="display: none;">
+                <h2 id="article-form-title" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Yeni Makale Ekle</h2>
+                <form method="post" action="/admin/article/save">
+                    <input type="hidden" id="article-id" name="id" />
+
+                    <div class="form-group">
+                        <label class="form-label">Başlık</label>
+                        <input 
+                            type="text" 
+                            id="article-title"
+                            name="title" 
+                            class="form-control" 
+                            placeholder="Makale Başlığı"
+                            oninput="autoGenerateSlug(this.value)"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Slug (URL uzantısı)</label>
+                        <input 
+                            type="text" 
+                            id="article-slug"
+                            name="slug" 
+                            class="form-control" 
+                            placeholder="makale-basligi-buraya"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Kapak Görseli URL</label>
+                        <input 
+                            type="url" 
+                            id="article-cover"
+                            name="coverImage" 
+                            class="form-control" 
+                            placeholder="https://images.unsplash.com/..."
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Özet (Kartta gösterilecek kısa açıklama)</label>
+                        <input 
+                            type="text" 
+                            id="article-summary"
+                            name="summary" 
+                            class="form-control" 
+                            placeholder="Bu yazıda şunlardan bahsettik..."
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">İçerik (Markdown Desteklenir)</label>
+                        <textarea 
+                            id="article-content"
+                            name="content" 
+                            class="form-control" 
+                            placeholder="# Başlık&#10;&#10;İçerik yazısı buraya...&#10;&#10;## Alt Başlık&#10;&#10;- Liste elemanı"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Kaydet</button>
+                        <button type="button" class="btn-secondary" onclick="hideArticleForm()">İptal</button>
+                    </div>
+                </form>
+            </div>
+        }
+
+        <!-- PROJECTS TAB -->
+        @if (activeTab == "projects")
+        {
+            <div id="projects-list-view">
+                <div class="admin-header-row" style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.5rem;">Projeler</h2>
+                    <button class="btn-primary" onclick="showCreateProjectForm()">
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Yeni Proje Ekle
+                    </button>
+                </div>
+
+                <div class="admin-list">
+                    @if (!Model.Projects.Any())
+                    {
+                        <div style="color: var(--text-muted); text-align: center; padding: 2rem;">Henüz proje bulunmuyor.</div>
+                    }
+                    else
+                    {
+                        @foreach (var proj in Model.Projects)
+                        {
+                            <div class="admin-item">
+                                <div>
+                                    <div class="admin-item-title">@proj.Title</div>
+                                    <div class="admin-item-meta">@proj.ProjectUrl</div>
+                                </div>
+                                <form method="post" action="/admin/project/delete/@proj.Id" onsubmit="return confirm('Bu projeyi silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn-danger" style="padding: 0.5rem;">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Create Project Form (Hidden by default) -->
+            <div id="project-form-view" style="display: none;">
+                <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Yeni Proje Ekle</h2>
+                <form method="post" action="/admin/project/save">
+                    <div class="form-group">
+                        <label class="form-label">Proje Adı</label>
+                        <input 
+                            type="text" 
+                            name="title" 
+                            class="form-control" 
+                            placeholder="Örn: E-Ticaret Arayüzü"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Açıklama</label>
+                        <textarea 
+                            name="description" 
+                            class="form-control" 
+                            placeholder="Projenin detaylı açıklaması..."
+                            required
+                            style="min-height: 80px;"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Görsel URL</label>
+                        <input 
+                            type="url" 
+                            name="imageUrl" 
+                            class="form-control" 
+                            placeholder="https://images.unsplash.com/..."
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Proje Linki (GitHub veya Live Demo)</label>
+                        <input 
+                            type="url" 
+                            name="projectUrl" 
+                            class="form-control" 
+                            placeholder="https://github.com/..."
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Etiketler (Virgülle ayırın)</label>
+                        <input 
+                            type="text" 
+                            name="tags" 
+                            class="form-control" 
+                            placeholder="React, .NET Core, CSS3"
+                        />
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Proje Ekle</button>
+                        <button type="button" class="btn-secondary" onclick="hideProjectForm()">İptal</button>
+                    </div>
+                </form>
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Article tab scripting
+        function showCreateArticleForm() {
+            document.getElementById('article-id').value = '';
+            document.getElementById('article-title').value = '';
+            document.getElementById('article-slug').value = '';
+            document.getElementById('article-cover').value = '';
+            document.getElementById('article-summary').value = '';
+            document.getElementById('article-content').value = '';
+            document.getElementById('article-form-title').innerText = 'Yeni Makale Ekle';
+            
+            document.getElementById('articles-list-view').style.display = 'none';
+            document.getElementById('article-form-view').style.display = 'block';
+        }
+
+        function hideArticleForm() {
+            document.getElementById('articles-list-view').style.display = 'block';
+            document.getElementById('article-form-view').style.display = 'none';
+        }
+
+        function editArticle(id, title, slug, summary, coverImage, content) {
+            document.getElementById('article-id').value = id;
+            document.getElementById('article-title').value = title;
+            document.getElementById('article-slug').value = slug;
+            document.getElementById('article-cover').value = coverImage;
+            document.getElementById('article-summary').value = summary;
+            document.getElementById('article-content').value = content;
+            document.getElementById('article-form-title').innerText = 'Makaleyi Düzenle';
+
+            document.getElementById('articles-list-view').style.display = 'none';
+            document.getElementById('article-form-view').style.display = 'block';
+        }
+
+        function autoGenerateSlug(title) {
+            // Only auto-generate if we are not editing an existing article
+            if (document.getElementById('article-id').value !== '') return;
+
+            var slug = title.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+            document.getElementById('article-slug').value = slug;
+        }
+
+        // Project tab scripting
+        function showCreateProjectForm() {
+            document.getElementById('projects-list-view').style.display = 'none';
+            document.getElementById('project-form-view').style.display = 'block';
+        }
+
+        function hideProjectForm() {
+            document.getElementById('projects-list-view').style.display = 'block';
+            document.getElementById('project-form-view').style.display = 'none';
+        }
+    </script>
+}
+
+@functions {
+    // Utility to encode strings for JavaScript inline initialization safely
+    public static string JavaScriptStringEncode(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        return System.Web.HttpUtility.JavaScriptStringEncode(value);
+    }
+}
