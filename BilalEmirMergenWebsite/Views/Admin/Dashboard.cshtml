@@ -4,6 +4,9 @@
     var activeTab = ViewBag.ActiveTab as string ?? "analytics";
 }
 
+<!-- Quill CSS CDN -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+
 <div class="admin-header-row">
     <div>
         <h1 style="font-size: 2.5rem;">Yönetici Paneli</h1>
@@ -61,7 +64,7 @@
                                 <div class="admin-item-title">@post.Title</div>
                                 <div class="admin-item-meta">@post.CreatedAt.ToString("dd.MM.yyyy")</div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: bold; color: var(--primary);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: bold; color: var(--primary-light);">
                                 <i data-lucide="eye" style="width: 16px; height: 16px;"></i> @post.Views
                             </div>
                         </div>
@@ -90,7 +93,7 @@
                     {
                         @foreach (var post in Model.Articles)
                         {
-                            <div class="admin-item" id="article-row-@post.Id">
+                            <div class="admin-item">
                                 <div>
                                     <div class="admin-item-title">@post.Title</div>
                                     <div class="admin-item-meta">
@@ -118,8 +121,9 @@
             <!-- Write/Edit Article Form (Hidden by default) -->
             <div id="article-form-view" style="display: none;">
                 <h2 id="article-form-title" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Yeni Makale Ekle</h2>
-                <form method="post" action="/admin/article/save">
+                <form method="post" action="/admin/article/save" onsubmit="syncQuillContent()">
                     <input type="hidden" id="article-id" name="id" />
+                    <input type="hidden" id="article-content-hidden" name="content" />
 
                     <div class="form-group">
                         <label class="form-label">Başlık</label>
@@ -169,14 +173,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">İçerik (Markdown Desteklenir)</label>
-                        <textarea 
-                            id="article-content"
-                            name="content" 
-                            class="form-control" 
-                            placeholder="# Başlık&#10;&#10;İçerik yazısı buraya...&#10;&#10;## Alt Başlık&#10;&#10;- Liste elemanı"
-                            required
-                        ></textarea>
+                        <label class="form-label">İçerik (Medium Tarzı Zengin Editör)</label>
+                        <!-- Quill Editor Container -->
+                        <div id="editor-container" style="min-height: 350px;"></div>
                     </div>
 
                     <div class="form-actions">
@@ -212,25 +211,33 @@
                                     <div class="admin-item-title">@proj.Title</div>
                                     <div class="admin-item-meta">@proj.ProjectUrl</div>
                                 </div>
-                                <form method="post" action="/admin/project/delete/@proj.Id" onsubmit="return confirm('Bu projeyi silmek istediğinizden emin misiniz?');">
-                                    <button type="submit" class="btn-danger" style="padding: 0.5rem;">
-                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-secondary" style="padding: 0.5rem;" onclick="editProject('@proj.Id', '@JavaScriptStringEncode(proj.Title)', '@JavaScriptStringEncode(proj.Description)', '@JavaScriptStringEncode(proj.ImageUrl)', '@JavaScriptStringEncode(proj.ProjectUrl)', '@JavaScriptStringEncode(string.Join(", ", proj.Tags))')">
+                                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
                                     </button>
-                                </form>
+                                    <form method="post" action="/admin/project/delete/@proj.Id" onsubmit="return confirm('Bu projeyi silmek istediğinizden emin misiniz?');">
+                                        <button type="submit" class="btn-danger" style="padding: 0.5rem;">
+                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         }
                     }
                 </div>
             </div>
 
-            <!-- Create Project Form (Hidden by default) -->
+            <!-- Create/Edit Project Form -->
             <div id="project-form-view" style="display: none;">
-                <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Yeni Proje Ekle</h2>
-                <form method="post" action="/admin/project/save">
+                <h2 id="project-form-title" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Yeni Proje Ekle</h2>
+                <form method="post" action="/admin/project/save" onsubmit="syncProjectContent()">
+                    <input type="hidden" id="project-id" name="id" />
+
                     <div class="form-group">
                         <label class="form-label">Proje Adı</label>
                         <input 
                             type="text" 
+                            id="project-title"
                             name="title" 
                             class="form-control" 
                             placeholder="Örn: E-Ticaret Arayüzü"
@@ -239,20 +246,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Açıklama</label>
-                        <textarea 
-                            name="description" 
-                            class="form-control" 
-                            placeholder="Projenin detaylı açıklaması..."
-                            required
-                            style="min-height: 80px;"
-                        ></textarea>
+                        <label class="form-label">Proje Detayları (Kullanılan Teknolojiler, Yaklaşımlar vb.)</label>
+                        <input type="hidden" id="project-desc-hidden" name="description" />
+                        <div id="project-desc-editor" style="min-height: 200px;"></div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Görsel URL</label>
                         <input 
                             type="url" 
+                            id="project-image-url"
                             name="imageUrl" 
                             class="form-control" 
                             placeholder="https://images.unsplash.com/..."
@@ -263,6 +266,7 @@
                         <label class="form-label">Proje Linki (GitHub veya Live Demo)</label>
                         <input 
                             type="url" 
+                            id="project-url"
                             name="projectUrl" 
                             class="form-control" 
                             placeholder="https://github.com/..."
@@ -273,6 +277,7 @@
                         <label class="form-label">Etiketler (Virgülle ayırın)</label>
                         <input 
                             type="text" 
+                            id="project-tags"
                             name="tags" 
                             class="form-control" 
                             placeholder="React, .NET Core, CSS3"
@@ -280,18 +285,79 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">Proje Ekle</button>
+                        <button type="submit" class="btn-primary">Kaydet</button>
                         <button type="button" class="btn-secondary" onclick="hideProjectForm()">İptal</button>
                     </div>
                 </form>
             </div>
         }
 
+
+
     </div>
 </div>
 
 @section Scripts {
+    <!-- Quill Rich Text Editor Script CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+
     <script>
+        // Global Quill Editor Variables
+        var articleQuill;
+        var projectQuill;
+
+        // Initialize Quill Editors on DOM Load
+        document.addEventListener("DOMContentLoaded", function() {
+            var articleContainer = document.getElementById('editor-container');
+            if (articleContainer) {
+                articleQuill = new Quill('#editor-container', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'code-block'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Medium tarzı makalenizi yazmaya başlayın...'
+                });
+            }
+
+            var projectContainer = document.getElementById('project-desc-editor');
+            if (projectContainer) {
+                projectQuill = new Quill('#project-desc-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'code-block'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Projede kullandığınız teknolojileri, yaklaşımları ve detayları yazın...'
+                });
+            }
+        });
+
+        // Sync contents from Quill editors to hidden inputs before submit
+        function syncQuillContent() {
+            if (articleQuill) {
+                var contentInput = document.getElementById('article-content-hidden');
+                contentInput.value = articleQuill.getSemanticHTML();
+            }
+        }
+
+        function syncProjectContent() {
+            if (projectQuill) {
+                var contentInput = document.getElementById('project-desc-hidden');
+                contentInput.value = projectQuill.getSemanticHTML();
+            }
+        }
+
         // Article tab scripting
         function showCreateArticleForm() {
             document.getElementById('article-id').value = '';
@@ -299,7 +365,7 @@
             document.getElementById('article-slug').value = '';
             document.getElementById('article-cover').value = '';
             document.getElementById('article-summary').value = '';
-            document.getElementById('article-content').value = '';
+            if (articleQuill) articleQuill.setText('');
             document.getElementById('article-form-title').innerText = 'Yeni Makale Ekle';
             
             document.getElementById('articles-list-view').style.display = 'none';
@@ -317,7 +383,11 @@
             document.getElementById('article-slug').value = slug;
             document.getElementById('article-cover').value = coverImage;
             document.getElementById('article-summary').value = summary;
-            document.getElementById('article-content').value = content;
+            
+            if (articleQuill) {
+                articleQuill.clipboard.dangerouslyPasteHTML(content);
+            }
+            
             document.getElementById('article-form-title').innerText = 'Makaleyi Düzenle';
 
             document.getElementById('articles-list-view').style.display = 'none';
@@ -325,7 +395,6 @@
         }
 
         function autoGenerateSlug(title) {
-            // Only auto-generate if we are not editing an existing article
             if (document.getElementById('article-id').value !== '') return;
 
             var slug = title.toLowerCase()
@@ -337,6 +406,14 @@
 
         // Project tab scripting
         function showCreateProjectForm() {
+            document.getElementById('project-id').value = '';
+            document.getElementById('project-title').value = '';
+            document.getElementById('project-image-url').value = '';
+            document.getElementById('project-url').value = '';
+            document.getElementById('project-tags').value = '';
+            if (projectQuill) projectQuill.setText('');
+            document.getElementById('project-form-title').innerText = 'Yeni Proje Ekle';
+
             document.getElementById('projects-list-view').style.display = 'none';
             document.getElementById('project-form-view').style.display = 'block';
         }
@@ -345,11 +422,29 @@
             document.getElementById('projects-list-view').style.display = 'block';
             document.getElementById('project-form-view').style.display = 'none';
         }
+
+        function editProject(id, title, description, imageUrl, projectUrl, tags) {
+            document.getElementById('project-id').value = id;
+            document.getElementById('project-title').value = title;
+            document.getElementById('project-image-url').value = imageUrl;
+            document.getElementById('project-url').value = projectUrl;
+            document.getElementById('project-tags').value = tags;
+            
+            if (projectQuill) {
+                projectQuill.clipboard.dangerouslyPasteHTML(description);
+            }
+
+            document.getElementById('project-form-title').innerText = 'Projeyi Düzenle';
+
+            document.getElementById('projects-list-view').style.display = 'none';
+            document.getElementById('project-form-view').style.display = 'block';
+        }
+
+
     </script>
 }
 
 @functions {
-    // Utility to encode strings for JavaScript inline initialization safely
     public static string JavaScriptStringEncode(string value)
     {
         if (string.IsNullOrEmpty(value)) return "";

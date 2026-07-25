@@ -84,7 +84,6 @@ namespace BilalEmirMergenWebsite.Services
         {
             try
             {
-                // Fetch the article first
                 var article = await GetArticleBySlugAsync(slug);
                 if (article != null)
                 {
@@ -157,11 +156,73 @@ namespace BilalEmirMergenWebsite.Services
             return response.Models.FirstOrDefault() ?? project;
         }
 
+        public async Task<Project> UpdateProjectAsync(string id, Project project)
+        {
+            var existing = await _client.From<Project>().Where(p => p.Id == id).Single();
+            if (existing != null)
+            {
+                existing.Title = project.Title;
+                existing.Description = project.Description;
+                existing.ImageUrl = project.ImageUrl;
+                existing.ProjectUrl = project.ProjectUrl;
+                existing.Tags = project.Tags;
+                await _client.From<Project>().Where(p => p.Id == id).Update(existing);
+                return existing;
+            }
+            return project;
+        }
+
         public async Task DeleteProjectAsync(string id)
         {
             try
             {
                 await _client.From<Project>().Where(p => p.Id == id).Delete();
+            }
+            catch (Exception) { }
+        }
+
+        // Socials
+        public async Task<List<Social>> GetSocialsAsync()
+        {
+            try
+            {
+                var response = await _client
+                    .From<Social>()
+                    .Get();
+                return response.Models;
+            }
+            catch (Exception)
+            {
+                return new List<Social>();
+            }
+        }
+
+        public async Task<Social> AddSocialAsync(Social social)
+        {
+            social.Id = Guid.NewGuid().ToString();
+            var response = await _client.From<Social>().Insert(social);
+            return response.Models.FirstOrDefault() ?? social;
+        }
+
+        public async Task<Social> UpdateSocialAsync(string id, Social social)
+        {
+            var existing = await _client.From<Social>().Where(s => s.Id == id).Single();
+            if (existing != null)
+            {
+                existing.Name = social.Name;
+                existing.Icon = social.Icon;
+                existing.Url = social.Url;
+                await _client.From<Social>().Where(s => s.Id == id).Update(existing);
+                return existing;
+            }
+            return social;
+        }
+
+        public async Task DeleteSocialAsync(string id)
+        {
+            try
+            {
+                await _client.From<Social>().Where(s => s.Id == id).Delete();
             }
             catch (Exception) { }
         }

@@ -23,7 +23,14 @@ namespace BilalEmirMergenWebsite.Services
         // Projects
         Task<List<Project>> GetProjectsAsync();
         Task<Project> AddProjectAsync(Project project);
+        Task<Project> UpdateProjectAsync(string id, Project project);
         Task DeleteProjectAsync(string id);
+
+        // Socials
+        Task<List<Social>> GetSocialsAsync();
+        Task<Social> AddSocialAsync(Social social);
+        Task<Social> UpdateSocialAsync(string id, Social social);
+        Task DeleteSocialAsync(string id);
 
         // Stats / Analytics
         Task<int> GetTotalViewsAsync();

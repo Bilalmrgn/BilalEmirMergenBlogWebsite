@@ -67,6 +67,7 @@ namespace BilalEmirMergenWebsite.Controllers
 
             var articles = await _db.GetArticlesAsync();
             var projects = await _db.GetProjectsAsync();
+            var socials = await _db.GetSocialsAsync();
             var totalViews = await _db.GetTotalViewsAsync();
             var siteVisits = await _db.GetSiteVisitsAsync();
 
@@ -74,6 +75,7 @@ namespace BilalEmirMergenWebsite.Controllers
             {
                 Articles = articles,
                 Projects = projects,
+                Socials = socials,
                 TotalViews = totalViews,
                 SiteVisits = siteVisits,
                 ArticlesCount = articles.Count
@@ -85,7 +87,7 @@ namespace BilalEmirMergenWebsite.Controllers
         [HttpPost("article/save")]
         public async Task<IActionResult> SaveArticle(string id, string title, string slug, string summary, string content, string coverImage)
         {
-            if (!IsAdminAuthenticated()) return Unauthorized();
+            if (!IsAdminAuthenticated()) return RedirectToAction("Login");
 
             var article = new Article
             {
@@ -111,16 +113,16 @@ namespace BilalEmirMergenWebsite.Controllers
         [HttpPost("article/delete/{id}")]
         public async Task<IActionResult> DeleteArticle(string id)
         {
-            if (!IsAdminAuthenticated()) return Unauthorized();
+            if (!IsAdminAuthenticated()) return RedirectToAction("Login");
 
             await _db.DeleteArticleAsync(id);
             return RedirectToAction("Dashboard", new { tab = "articles" });
         }
 
         [HttpPost("project/save")]
-        public async Task<IActionResult> SaveProject(string title, string description, string imageUrl, string projectUrl, string tags)
+        public async Task<IActionResult> SaveProject(string id, string title, string description, string imageUrl, string projectUrl, string tags)
         {
-            if (!IsAdminAuthenticated()) return Unauthorized();
+            if (!IsAdminAuthenticated()) return RedirectToAction("Login");
 
             var tagsList = string.IsNullOrEmpty(tags) 
                 ? new List<string>() 
@@ -135,17 +137,58 @@ namespace BilalEmirMergenWebsite.Controllers
                 Tags = tagsList
             };
 
-            await _db.AddProjectAsync(project);
+            if (string.IsNullOrEmpty(id))
+            {
+                await _db.AddProjectAsync(project);
+            }
+            else
+            {
+                await _db.UpdateProjectAsync(id, project);
+            }
+
             return RedirectToAction("Dashboard", new { tab = "projects" });
         }
 
         [HttpPost("project/delete/{id}")]
         public async Task<IActionResult> DeleteProject(string id)
         {
-            if (!IsAdminAuthenticated()) return Unauthorized();
+            if (!IsAdminAuthenticated()) return RedirectToAction("Login");
 
             await _db.DeleteProjectAsync(id);
             return RedirectToAction("Dashboard", new { tab = "projects" });
+        }
+
+        [HttpPost("social/save")]
+        public async Task<IActionResult> SaveSocial(string id, string name, string icon, string url)
+        {
+            if (!IsAdminAuthenticated()) return RedirectToAction("Login");
+
+            var social = new Social
+            {
+                Name = name,
+                Icon = icon ?? "globe",
+                Url = url
+            };
+
+            if (string.IsNullOrEmpty(id))
+            {
+                await _db.AddSocialAsync(social);
+            }
+            else
+            {
+                await _db.UpdateSocialAsync(id, social);
+            }
+
+            return RedirectToAction("Dashboard", new { tab = "socials" });
+        }
+
+        [HttpPost("social/delete/{id}")]
+        public async Task<IActionResult> DeleteSocial(string id)
+        {
+            if (!IsAdminAuthenticated()) return RedirectToAction("Login");
+
+            await _db.DeleteSocialAsync(id);
+            return RedirectToAction("Dashboard", new { tab = "socials" });
         }
     }
 
@@ -153,6 +196,7 @@ namespace BilalEmirMergenWebsite.Controllers
     {
         public List<Article> Articles { get; set; } = new();
         public List<Project> Projects { get; set; } = new();
+        public List<Social> Socials { get; set; } = new();
         public int TotalViews { get; set; }
         public int SiteVisits { get; set; }
         public int ArticlesCount { get; set; }

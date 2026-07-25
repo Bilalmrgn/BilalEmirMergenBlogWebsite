@@ -12,7 +12,7 @@ namespace BilalEmirMergenWebsite.Services
                 Title = "ASP.NET Core ve Supabase ile Blog Geliştirmek",
                 Slug = "aspnet-core-ve-supabase-ile-blog-gelistirmek",
                 Summary = "Bu makalede, modern bir .NET 9 web uygulamasına popüler PostgreSQL bulut çözümü Supabase'i nasıl entegre edeceğinizi öğrenin.",
-                Content = "# ASP.NET Core ve Supabase\n\nC# dünyasında serverless mimariler gün geçtikçe daha popüler hale geliyor. Bu makalede Supabase istemcisini .NET projelerinize nasıl dahil edeceğinizi anlatıyoruz.\n\n## 1. Paket Kurulumu\nİlk adımda NuGet üzerinden `supabase-csharp` paketini kuruyoruz.\n\n## 2. Model Tanımları\nTablolarımızı C# sınıfları olarak temsil etmek için `BaseModel` ve attribute yapısını kullanıyoruz.\n\n## 3. Servis Tescili\nProgram.cs'de DI (Dependency Injection) olarak servisimizi kaydediyoruz.",
+                Content = "<h1>ASP.NET Core ve Supabase</h1><p>C# dünyasında serverless mimariler gün geçtikçe daha popüler hale geliyor. Bu makalede Supabase istemcisini .NET projelerinize nasıl dahil edeceğinizi anlatıyoruz.</p><h2>1. Paket Kurulumu</h2><p>İlk adımda NuGet üzerinden <code>supabase-csharp</code> paketini kuruyoruz.</p><h2>2. Model Tanımları</h2><p>Tablolarımızı C# sınıfları olarak temsil etmek için <code>BaseModel</code> ve attribute yapısını kullanıyoruz.</p><h2>3. Servis Tescili</h2><p>Program.cs'de DI (Dependency Injection) olarak servisimizi kaydediyoruz.</p>",
                 Views = 135,
                 CoverImage = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
                 CreatedAt = DateTime.UtcNow.AddDays(-3)
@@ -23,7 +23,7 @@ namespace BilalEmirMergenWebsite.Services
                 Title = "Yapay Zeka ve Yazılım Geliştiriciliğinin Geleceği",
                 Slug = "yapay-zeka-ve-yazilim-gelistiriciligi",
                 Summary = "Yapay zeka asistanları kod yazma süreçlerimizi nasıl değiştiriyor? Geliştiriciler olarak nasıl konumlanmalıyız?",
-                Content = "# Yapay Zeka ve Yazılım\n\nLLM modellerinin (Gemini, Copilot vb.) kod yazma yetenekleri her geçen gün artıyor. Peki bu durum geliştiricilerin sonu mu, yoksa yeni bir çağın başlangıcı mı?\n\n## Yeni Rolümüz: Kod Tasarımcısı\nArtık sadece kod yazan değil, kodun kalitesini, mimarisini ve entegrasyonunu denetleyen konumdayız.",
+                Content = "<h1>Yapay Zeka ve Yazılım</h1><p>LLM modellerinin (Gemini, Copilot vb.) kod yazma yetenekleri her geçen gün artıyor. Peki bu durum geliştiricilerin sonu mu, yoksa yeni bir çağın başlangıcı mı?</p><h2>Yeni Rolümüz: Kod Tasarımcısı</h2><p>Artık sadece kod yazan değil, kodun kalitesini, mimarisini ve entegrasyonunu denetleyen konumdayız.</p>",
                 Views = 78,
                 CoverImage = "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80",
                 CreatedAt = DateTime.UtcNow.AddDays(-7)
@@ -50,6 +50,12 @@ namespace BilalEmirMergenWebsite.Services
                 ProjectUrl = "https://github.com/Bilalmrgn",
                 Tags = new List<string> { ".NET 9", "CSS3", "JavaScript" }
             }
+        };
+
+        private static readonly List<Social> _socials = new()
+        {
+            new Social { Id = "1", Name = "GitHub", Icon = "github", Url = "https://github.com/Bilalmrgn" },
+            new Social { Id = "2", Name = "LinkedIn", Icon = "linkedin", Url = "https://linkedin.com" }
         };
 
         private static int _siteVisits = 421;
@@ -153,12 +159,61 @@ namespace BilalEmirMergenWebsite.Services
             return Task.FromResult(project);
         }
 
+        public Task<Project> UpdateProjectAsync(string id, Project project)
+        {
+            var existing = _projects.FirstOrDefault(p => p.Id == id);
+            if (existing != null)
+            {
+                existing.Title = project.Title;
+                existing.Description = project.Description;
+                existing.ImageUrl = project.ImageUrl;
+                existing.ProjectUrl = project.ProjectUrl;
+                existing.Tags = project.Tags;
+            }
+            return Task.FromResult(existing ?? project);
+        }
+
         public Task DeleteProjectAsync(string id)
         {
             var project = _projects.FirstOrDefault(p => p.Id == id);
             if (project != null)
             {
                 _projects.Remove(project);
+            }
+            return Task.CompletedTask;
+        }
+
+        // Socials
+        public Task<List<Social>> GetSocialsAsync()
+        {
+            return Task.FromResult(_socials.OrderBy(s => s.Name).ToList());
+        }
+
+        public Task<Social> AddSocialAsync(Social social)
+        {
+            social.Id = Guid.NewGuid().ToString();
+            _socials.Add(social);
+            return Task.FromResult(social);
+        }
+
+        public Task<Social> UpdateSocialAsync(string id, Social social)
+        {
+            var existing = _socials.FirstOrDefault(s => s.Id == id);
+            if (existing != null)
+            {
+                existing.Name = social.Name;
+                existing.Icon = social.Icon;
+                existing.Url = social.Url;
+            }
+            return Task.FromResult(existing ?? social);
+        }
+
+        public Task DeleteSocialAsync(string id)
+        {
+            var social = _socials.FirstOrDefault(s => s.Id == id);
+            if (social != null)
+            {
+                _socials.Remove(social);
             }
             return Task.CompletedTask;
         }

@@ -12,26 +12,185 @@
     </div>
 }
 
-<!-- Hero Section -->
+<!-- Hero / Recruiter-friendly Intro Section -->
 <section class="hero-section">
     <div class="hero-glow"></div>
-    <h1 class="hero-title">Merhaba, Ben Bilal Emir Mergen</h1>
+    
+    <div class="status-badge">
+        <span class="status-dot"></span>
+        İş Tekliflerine Açık (Yeni Fırsatlar)
+    </div>
+    
+    <h1 class="hero-title">Bilal Emir Mergen</h1>
+    <h2 style="font-size: 1.8rem; color: var(--primary-light); font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.01em;">
+        Full-Stack Software Developer
+    </h2>
+    
     <p class="hero-subtitle">
-        Full-Stack Web Geliştirici & Yazar. Teknolojik yenilikleri takip ediyor, 
-        modern web çözümleri üretiyor ve öğrendiklerimi makalelerimle paylaşıyorum.
+        C# .NET Core, React ve bulut tabanlı modern mimariler (Supabase/PostgreSQL) kullanarak, 
+        hızlı ve kullanıcı deneyimi yüksek web uygulamaları geliştiriyorum. 
+        Teknolojiyi öğrenmekle kalmıyor, makalelerimle geliştirici topluluğuna katkı sağlıyorum.
     </p>
-    <div class="social-links">
-        <a href="https://github.com/Bilalmrgn" target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub">
-            <i data-lucide="github"></i>
+
+    <!-- Static Social Links -->
+    <div style="display: flex; gap: 1rem; margin: 0.5rem 0 1.5rem 0;">
+        <a href="https://github.com/Bilalmrgn" target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: var(--transition-smooth);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
         </a>
-        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="LinkedIn">
-            <i data-lucide="linkedin"></i>
+        <a href="https://www.linkedin.com/in/bilalmrgn/" target="_blank" rel="noopener noreferrer" class="social-icon" title="LinkedIn" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: var(--transition-smooth);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+        <a href="mailto:bilal.emir.mergen@hotmail.com" class="social-icon" title="E-Posta" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: var(--transition-smooth);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
         </a>
     </div>
 </section>
+    
+    <!-- Skills / Tech Stack Section (Extremely Recruiter Friendly) -->
+    <section class="section-container" style="border-top: 1px solid var(--card-border); padding-top: 3.5rem;">
+        <h2 class="section-title">
+            <i data-lucide="cpu" style="color: var(--primary); margin-right: 8px;"></i>
+            Yetenekler & Teknolojiler
+        </h2>
+        
+        <div class="skills-grid-container">
+            
+            <!-- Card 1: Backend & Frameworks -->
+            <div class="skills-card-group">
+                <div class="skills-group-title">
+                    <i data-lucide="wrench" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                    Backend & Frameworks
+                </div>
+                <div class="skills-tiles-grid">
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title=".NET Core">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dot-net/dot-net-original.svg" alt=".NET Core" />
+                        </div>
+                        <div class="skill-tile-name">.NET Core</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="Node.js">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" alt="Node.js" />
+                        </div>
+                        <div class="skill-tile-name">Node.js</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="Express" style="background: #111;">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg" alt="Express" style="filter: invert(1);" />
+                        </div>
+                        <div class="skill-tile-name">Express</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="C#">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg" alt="C#" />
+                        </div>
+                        <div class="skill-tile-name">C#</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="JavaScript">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" />
+                        </div>
+                        <div class="skill-tile-name">JavaScript</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="TypeScript">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg" alt="TypeScript" />
+                        </div>
+                        <div class="skill-tile-name">TypeScript</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Databases & Messaging -->
+            <div class="skills-card-group">
+                <div class="skills-group-title">
+                    <i data-lucide="database" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                    Databases & Messaging
+                </div>
+                <div class="skills-tiles-grid">
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="MySQL">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" alt="MySQL" />
+                        </div>
+                        <div class="skill-tile-name">MySQL</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="MongoDB">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg" alt="MongoDB" />
+                        </div>
+                        <div class="skill-tile-name">MongoDB</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="Redis">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redis/redis-original.svg" alt="Redis" />
+                        </div>
+                        <div class="skill-tile-name">Redis</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="RabbitMQ">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/rabbitmq/rabbitmq-original.svg" alt="RabbitMQ" />
+                        </div>
+                        <div class="skill-tile-name">RabbitMQ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Frontend Technologies -->
+            <div class="skills-card-group">
+                <div class="skills-group-title">
+                    <i data-lucide="palette" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                    Frontend Technologies
+                </div>
+                <div class="skills-tiles-grid">
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="Angular">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/angular/angular-original.svg" alt="Angular" />
+                        </div>
+                        <div class="skill-tile-name">Angular</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="HTML5">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5" />
+                        </div>
+                        <div class="skill-tile-name">HTML5</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="CSS3">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3" />
+                        </div>
+                        <div class="skill-tile-name">CSS3</div>
+                    </div>
+                    <div class="skill-tile-item">
+                        <div class="skill-tile-logo-wrapper" title="Bootstrap">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap" />
+                        </div>
+                        <div class="skill-tile-name">Bootstrap</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width Card 4: Architecture & Concepts -->
+            <div class="skills-concepts-group">
+                <div class="skills-group-title" style="border: none; padding-bottom: 0;">
+                    <i data-lucide="brain" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                    Mimariler & Konseptler
+                </div>
+                <div class="concepts-pills-wrap">
+                    <span class="concept-pill">RESTful API</span>
+                    <span class="concept-pill">GraphQL</span>
+                    <span class="concept-pill">JWT Authentication</span>
+                    <span class="concept-pill">OAuth 2.0</span>
+                    <span class="concept-pill">Onion Architecture</span>
+                    <span class="concept-pill">N-Tier Architecture</span>
+                    <span class="concept-pill">Microservices</span>
+                </div>
+            </div>
+            
+        </div>
+    </section>
 
 <!-- Projects Showcase -->
-<section class="section-container">
+<section id="projects" class="section-container" style="border-top: 1px solid var(--card-border);">
     <h2 class="section-title">
         <i data-lucide="briefcase" style="color: var(--secondary); margin-right: 8px;"></i>
         Projelerim
@@ -39,7 +198,7 @@
 
     @if (!Model.Projects.Any())
     {
-        <div class="glass-card" style="text-align: center; padding: 2rem;">
+        <div class="glass-card" style="text-align: center; padding: 3rem;">
             <p style="color: var(--text-muted);">Henüz proje eklenmemiş.</p>
         </div>
     }
@@ -54,7 +213,7 @@
                         <img src="@proj.ImageUrl" alt="@proj.Title" class="project-image" onerror="this.src='https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80'" />
                     }
                     <h3 class="project-title">@proj.Title</h3>
-                    <p class="project-desc">@proj.Description</p>
+                    <p class="project-desc">@StripHtml(proj.Description)</p>
                     
                     @if (proj.Tags != null && proj.Tags.Any())
                     {
@@ -66,12 +225,9 @@
                         </div>
                     }
 
-                    @if (!string.IsNullOrEmpty(proj.ProjectUrl))
-                    {
-                        <a href="@proj.ProjectUrl" target="_blank" rel="noopener noreferrer" class="project-link">
-                            Projeyi İncele <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
-                        </a>
-                    }
+                    <a href="javascript:void(0)" onclick="openProjectModal('@proj.Id', '@JavaScriptStringEncode(proj.Title)', '@JavaScriptStringEncode(proj.Description)', '@JavaScriptStringEncode(proj.ImageUrl)', '@JavaScriptStringEncode(proj.ProjectUrl)', '@JavaScriptStringEncode(string.Join(", ", proj.Tags ?? new List<string>()))')" class="project-link">
+                        Detayları İncele <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                    </a>
                 </div>
             }
         </div>
@@ -87,7 +243,7 @@
 
     @if (!Model.Articles.Any())
     {
-        <div class="glass-card" style="text-align: center; padding: 2rem;">
+        <div class="glass-card" style="text-align: center; padding: 3rem;">
             <p style="color: var(--text-muted);">Henüz blog yazısı eklenmemiş.</p>
         </div>
     }
@@ -118,3 +274,99 @@
         </div>
     }
 </section>
+
+<!-- Project Detail Modal -->
+<div id="projectDetailModal" class="project-modal" style="display: none;">
+    <div class="project-modal-backdrop" onclick="closeProjectModal()"></div>
+    <div class="project-modal-content">
+        <button class="project-modal-close" onclick="closeProjectModal()">&times;</button>
+        <div class="project-modal-body">
+            <img id="modal-project-image" src="" alt="" class="modal-project-image" style="display: none;" />
+            <h2 id="modal-project-title" class="modal-project-title"></h2>
+            <div id="modal-project-tags" class="project-tags" style="margin-top: 0.75rem; margin-bottom: 1.5rem;"></div>
+            <div id="modal-project-desc" class="modal-project-desc"></div>
+            
+            <div class="modal-project-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <a id="modal-project-url" href="" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                    Projeyi Ziyaret Et / GitHub
+                </a>
+                <button type="button" class="btn-secondary" onclick="closeProjectModal()">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openProjectModal(id, title, description, imageUrl, projectUrl, tagsString) {
+            document.getElementById('modal-project-title').innerText = title;
+            document.getElementById('modal-project-desc').innerHTML = description;
+            
+            var img = document.getElementById('modal-project-image');
+            if (imageUrl) {
+                img.src = imageUrl;
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+            }
+            
+            var actionBtn = document.getElementById('modal-project-url');
+            if (projectUrl) {
+                actionBtn.href = projectUrl;
+                actionBtn.style.display = 'inline-flex';
+            } else {
+                actionBtn.style.display = 'none';
+            }
+            
+            var tagsContainer = document.getElementById('modal-project-tags');
+            tagsContainer.innerHTML = '';
+            if (tagsString) {
+                var tags = tagsString.split(',').map(t => t.trim()).filter(t => t.length > 0);
+                tags.forEach(tag => {
+                    var span = document.createElement('span');
+                    span.className = 'project-tag';
+                    span.innerText = tag;
+                    tagsContainer.appendChild(span);
+                });
+            }
+            
+            document.getElementById('projectDetailModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+        
+        function closeProjectModal() {
+            document.getElementById('projectDetailModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeProjectModal();
+            }
+        });
+    </script>
+}
+
+@functions {
+    public static string StripHtml(string html)
+    {
+        if (string.IsNullOrEmpty(html)) return "";
+        var plain = System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+        plain = System.Net.WebUtility.HtmlDecode(plain);
+        if (plain.Length > 150) {
+            plain = plain.Substring(0, 147) + "...";
+        }
+        return plain;
+    }
+
+    public static string JavaScriptStringEncode(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        return System.Web.HttpUtility.JavaScriptStringEncode(value);
+    }
+}

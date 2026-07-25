@@ -1,52 +1,6 @@
 @model BilalEmirMergenWebsite.Models.Article
 @{
     ViewData["Title"] = Model.Title;
-
-    // Helper functions to parse simple markdown to HTML strings in Razor
-    string RenderMarkdown(string content)
-    {
-        if (string.IsNullOrEmpty(content)) return "";
-
-        var paragraphs = content.Split(new[] { "\n\n" }, StringSplitOptions.None);
-        var result = new System.Text.StringBuilder();
-
-        foreach (var p in paragraphs)
-        {
-            var trimmed = p.Trim();
-            if (trimmed.StartsWith("# "))
-            {
-                result.AppendLine($"<h1 style=\"font-size: 2.2rem; margin: 2rem 0 1rem 0; color: #ffffff;\">{trimmed.Substring(2)}</h1>");
-            }
-            else if (trimmed.StartsWith("## "))
-            {
-                result.AppendLine($"<h2 style=\"font-size: 1.6rem; margin: 1.8rem 0 0.8rem 0; color: #ffffff;\">{trimmed.Substring(3)}</h2>");
-            }
-            else if (trimmed.StartsWith("### "))
-            {
-                result.AppendLine($"<h3 style=\"font-size: 1.3rem; margin: 1.5rem 0 0.6rem 0; color: #ffffff;\">{trimmed.Substring(4)}</h3>");
-            }
-            else if (trimmed.StartsWith("- ") || trimmed.StartsWith("* "))
-            {
-                result.AppendLine("<ul style=\"padding-left: 1.5rem; margin-bottom: 1.25rem;\">");
-                var items = trimmed.Split('\n');
-                foreach (var item in items)
-                {
-                    var cleanItem = item.Trim();
-                    if (cleanItem.Length > 2)
-                    {
-                        result.AppendLine($"<li style=\"margin-bottom: 0.5rem;\">{cleanItem.Substring(2)}</li>");
-                    }
-                }
-                result.AppendLine("</ul>");
-            }
-            else
-            {
-                result.AppendLine($"<p style=\"margin-bottom: 1.25rem;\">{trimmed.Replace("\n", "<br/>")}</p>");
-            }
-        }
-
-        return result.ToString();
-    }
 }
 
 <article>
@@ -73,7 +27,8 @@
         <img src="@Model.CoverImage" alt="@Model.Title" class="post-cover" onerror="this.style.display='none';" />
     }
 
+    <!-- Raw HTML output supporting rich Quill editor styling directly -->
     <div class="post-body">
-        @Html.Raw(RenderMarkdown(Model.Content))
+        @Html.Raw(Model.Content)
     </div>
 </article>

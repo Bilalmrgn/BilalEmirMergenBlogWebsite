@@ -27,11 +27,13 @@ namespace BilalEmirMergenWebsite.Controllers
 
             var articles = await _db.GetArticlesAsync();
             var projects = await _db.GetProjectsAsync();
+            var socials = await _db.GetSocialsAsync();
 
             var viewModel = new HomeViewModel
             {
                 Articles = articles,
-                Projects = projects
+                Projects = projects,
+                Socials = socials
             };
 
             return View(viewModel);
@@ -64,5 +66,6 @@ namespace BilalEmirMergenWebsite.Controllers
     {
         public List<Article> Articles { get; set; } = new();
         public List<Project> Projects { get; set; } = new();
+        public List<Social> Socials { get; set; } = new();
     }
 }
