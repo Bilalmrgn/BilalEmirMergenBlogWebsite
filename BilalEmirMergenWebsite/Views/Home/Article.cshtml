@@ -12,11 +12,6 @@
     <header class="post-header">
         <div class="post-meta">
             <span>@Model.CreatedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</span>
-            <span>•</span>
-            <span>
-                <i data-lucide="eye" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> 
-                @Model.Views okuma
-            </span>
         </div>
         <h1 class="post-title">@Model.Title</h1>
         <p style="font-size: 1.2rem; color: var(--text-muted); font-style: italic;">@Model.Summary</p>

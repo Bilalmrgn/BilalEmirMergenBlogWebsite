@@ -65,11 +65,21 @@ namespace BilalEmirMergenWebsite.Controllers
             ViewBag.ActiveTab = tab;
             ViewBag.UserEmail = HttpContext.Session.GetString("AdminUser");
 
-            var articles = await _db.GetArticlesAsync();
-            var projects = await _db.GetProjectsAsync();
-            var socials = await _db.GetSocialsAsync();
-            var totalViews = await _db.GetTotalViewsAsync();
-            var siteVisits = await _db.GetSiteVisitsAsync();
+            // Fetch data in parallel
+            var articlesTask = _db.GetArticlesAsync();
+            var projectsTask = _db.GetProjectsAsync();
+            var socialsTask = _db.GetSocialsAsync();
+            var siteVisitsTask = _db.GetSiteVisitsAsync();
+
+            await Task.WhenAll(articlesTask, projectsTask, socialsTask, siteVisitsTask);
+
+            var articles = await articlesTask;
+            var projects = await projectsTask;
+            var socials = await socialsTask;
+            var siteVisits = await siteVisitsTask;
+
+            // Calculate total views in memory from already retrieved articles list to eliminate a DB query
+            var totalViews = articles.Sum(a => a.Views);
 
             var viewModel = new DashboardViewModel
             {
@@ -91,10 +101,10 @@ namespace BilalEmirMergenWebsite.Controllers
 
             var article = new Article
             {
-                Title = title,
-                Slug = slug,
-                Summary = summary,
-                Content = content,
+                Title = title ?? string.Empty,
+                Slug = slug ?? string.Empty,
+                Summary = summary ?? string.Empty,
+                Content = content ?? string.Empty,
                 CoverImage = coverImage ?? string.Empty
             };
 
@@ -130,8 +140,8 @@ namespace BilalEmirMergenWebsite.Controllers
 
             var project = new Project
             {
-                Title = title,
-                Description = description,
+                Title = title ?? string.Empty,
+                Description = description ?? string.Empty,
                 ImageUrl = imageUrl ?? string.Empty,
                 ProjectUrl = projectUrl ?? string.Empty,
                 Tags = tagsList
@@ -165,9 +175,9 @@ namespace BilalEmirMergenWebsite.Controllers
 
             var social = new Social
             {
-                Name = name,
+                Name = name ?? string.Empty,
                 Icon = icon ?? "globe",
-                Url = url
+                Url = url ?? string.Empty
             };
 
             if (string.IsNullOrEmpty(id))

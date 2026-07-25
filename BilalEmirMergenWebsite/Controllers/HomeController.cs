@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using BilalEmirMergenWebsite.Models;
 using BilalEmirMergenWebsite.Services;
 
@@ -16,24 +17,40 @@ namespace BilalEmirMergenWebsite.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Record general site visit once per user session
+            // Record general site visit once per user session in the background
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("HasVisited")))
             {
-                await _db.IncrementSiteVisitsAsync(Request.Path.Value ?? "/");
+                var serviceProvider = HttpContext.RequestServices;
+                var path = Request.Path.Value ?? "/";
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using (var scope = serviceProvider.CreateScope())
+                        {
+                            var db = scope.ServiceProvider.GetRequiredService<IDatabaseService>();
+                            await db.IncrementSiteVisitsAsync(path);
+                        }
+                    }
+                    catch { }
+                });
                 HttpContext.Session.SetString("HasVisited", "True");
             }
 
             ViewBag.IsDemo = _db.IsDemo;
 
-            var articles = await _db.GetArticlesAsync();
-            var projects = await _db.GetProjectsAsync();
-            var socials = await _db.GetSocialsAsync();
+            // Fetch data in parallel
+            var articlesTask = _db.GetArticlesAsync();
+            var projectsTask = _db.GetProjectsAsync();
+            var socialsTask = _db.GetSocialsAsync();
+
+            await Task.WhenAll(articlesTask, projectsTask, socialsTask);
 
             var viewModel = new HomeViewModel
             {
-                Articles = articles,
-                Projects = projects,
-                Socials = socials
+                Articles = await articlesTask,
+                Projects = await projectsTask,
+                Socials = await socialsTask
             };
 
             return View(viewModel);
@@ -48,8 +65,20 @@ namespace BilalEmirMergenWebsite.Controllers
                 return NotFound();
             }
 
-            // Increment read views
-            await _db.IncrementArticleViewsAsync(slug);
+            // Increment read views in the background to avoid delaying article render
+            var serviceProvider = HttpContext.RequestServices;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using (var scope = serviceProvider.CreateScope())
+                    {
+                        var db = scope.ServiceProvider.GetRequiredService<IDatabaseService>();
+                        await db.IncrementArticleViewsAsync(slug);
+                    }
+                }
+                catch { }
+            });
 
             ViewBag.IsDemo = _db.IsDemo;
             return View(article);

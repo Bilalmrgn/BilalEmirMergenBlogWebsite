@@ -249,7 +249,7 @@
     }
     else
     {
-        <div class="blog-feed">
+        <div class="blog-grid">
             @foreach (var post in Model.Articles)
             {
                 <a href="/blog/@post.Slug" class="glass-card blog-card">
@@ -260,11 +260,6 @@
                     <div class="blog-card-content">
                         <div class="blog-card-meta">
                             <span>@post.CreatedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</span>
-                            <span style="margin: 0 8px;">•</span>
-                            <span>
-                                <i data-lucide="eye" style="width: 14px; height: 14px; margin-right: 4px; display: inline-block; vertical-align: middle;"></i> 
-                                @post.Views okuma
-                            </span>
                         </div>
                         <h3 class="blog-card-title">@post.Title</h3>
                         <p class="blog-card-summary">@post.Summary</p>
