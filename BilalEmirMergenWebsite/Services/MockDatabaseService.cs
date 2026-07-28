@@ -102,6 +102,12 @@ namespace BilalEmirMergenWebsite.Services
             return Task.FromResult(article);
         }
 
+        public Task<Article?> GetArticleByIdAsync(string id)
+        {
+            var article = _articles.FirstOrDefault(a => a.Id == id);
+            return Task.FromResult<Article?>(article);
+        }
+
         public Task IncrementArticleViewsAsync(string slug)
         {
             var article = _articles.FirstOrDefault(a => a.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
@@ -149,6 +155,12 @@ namespace BilalEmirMergenWebsite.Services
         public Task<List<Project>> GetProjectsAsync()
         {
             return Task.FromResult(_projects.OrderByDescending(p => p.CreatedAt).ToList());
+        }
+
+        public Task<Project?> GetProjectByIdAsync(string id)
+        {
+            var project = _projects.FirstOrDefault(p => p.Id == id);
+            return Task.FromResult<Project?>(project);
         }
 
         public Task<Project> AddProjectAsync(Project project)

@@ -16,21 +16,19 @@
 <section class="hero-section">
     <div class="hero-glow"></div>
     
-    <div class="status-badge">
-        <span class="status-dot"></span>
-        İş Tekliflerine Açık (Yeni Fırsatlar)
-    </div>
+
     
     <h1 class="hero-title">Bilal Emir Mergen</h1>
     <h2 style="font-size: 1.8rem; color: var(--primary-light); font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.01em;">
         Full-Stack Software Developer
     </h2>
     
-    <p class="hero-subtitle">
-        C# .NET Core, React ve bulut tabanlı modern mimariler (Supabase/PostgreSQL) kullanarak, 
-        hızlı ve kullanıcı deneyimi yüksek web uygulamaları geliştiriyorum. 
-        Teknolojiyi öğrenmekle kalmıyor, makalelerimle geliştirici topluluğuna katkı sağlıyorum.
-    </p>
+    <div class="hero-subtitle" style="font-size: 1.1rem; color: var(--text-muted); max-width: 800px; line-height: 1.7; display: flex; flex-direction: column; gap: 1rem;">
+        <p>Web tabanlı yazılım geliştirme projelerinde aktif olarak görev almış, backend odaklı çalışan bir yazılım geliştiricisiyim.</p>
+        <p>Birkaç ay süren stajım boyunca API geliştirme, veri işleme ve uygulama içi veri akışları üzerine çalıştım; backend süreçlerini frontend ile entegre edecek çözümler geliştirdim.</p>
+        <p>Bu süreçte farklı mimari yaklaşımlar ve yazılım teknolojileri kullanarak mevcut projelerde iyileştirmeler yaptım. Kodun okunabilirliği, sürdürülebilirliği ve güvenliği üzerine özellikle odaklandım.</p>
+        <p>Üniversite eğitimimle birlikte pratik tecrübe kazandığım bu alanlarda kendimi geliştirmeye devam ediyor, yazılım geliştirme ve problem çözme motivasyonuyla kariyerime yön veriyorum.</p>
+    </div>
 
     <!-- Static Social Links -->
     <div style="display: flex; gap: 1rem; margin: 0.5rem 0 1.5rem 0;">
@@ -215,17 +213,9 @@
                     <h3 class="project-title">@proj.Title</h3>
                     <p class="project-desc">@StripHtml(proj.Description)</p>
                     
-                    @if (proj.Tags != null && proj.Tags.Any())
-                    {
-                        <div class="project-tags">
-                            @foreach (var tag in proj.Tags)
-                            {
-                                <span class="project-tag">@tag</span>
-                            }
-                        </div>
-                    }
 
-                    <a href="javascript:void(0)" onclick="openProjectModal('@proj.Id', '@JavaScriptStringEncode(proj.Title)', '@JavaScriptStringEncode(proj.Description)', '@JavaScriptStringEncode(proj.ImageUrl)', '@JavaScriptStringEncode(proj.ProjectUrl)', '@JavaScriptStringEncode(string.Join(", ", proj.Tags ?? new List<string>()))')" class="project-link">
+
+                    <a href="javascript:void(0)" onclick="openProjectModal('@proj.Id', '@JavaScriptStringEncode(proj.Title)', '@JavaScriptStringEncode(proj.ImageUrl)', '@JavaScriptStringEncode(proj.ProjectUrl)', '@JavaScriptStringEncode(string.Join(", ", proj.Tags ?? new List<string>()))')" class="project-link">
                         Detayları İncele <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
                     </a>
                 </div>
@@ -294,9 +284,18 @@
 
 @section Scripts {
     <script>
-        function openProjectModal(id, title, description, imageUrl, projectUrl, tagsString) {
+        function openProjectModal(id, title, imageUrl, projectUrl, tagsString) {
             document.getElementById('modal-project-title').innerText = title;
-            document.getElementById('modal-project-desc').innerHTML = description;
+            document.getElementById('modal-project-desc').innerHTML = '<div style="text-align:center; padding:2rem;"><span class="status-dot" style="background-color:var(--primary); width:8px; height:8px; display:inline-block; border-radius:50%; animation:pulse-glow 2s infinite;"></span> Yükleniyor...</div>';
+            
+            fetch('/project/description/' + id)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('modal-project-desc').innerHTML = data.description || '';
+                })
+                .catch(err => {
+                    document.getElementById('modal-project-desc').innerHTML = '<p style="color:var(--accent);">Proje detayları yüklenirken hata oluştu.</p>';
+                });
             
             var img = document.getElementById('modal-project-image');
             if (imageUrl) {

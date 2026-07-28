@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 using BilalEmirMergenWebsite.Models;
 using BilalEmirMergenWebsite.Services;
 
@@ -41,7 +43,7 @@ namespace BilalEmirMergenWebsite.Controllers
                 return RedirectToAction("Dashboard");
             }
 
-            ModelState.AddModelError("", "E-posta veya şifre hatalı! (Demo giriş: admin@bilal.com / admin123)");
+            ModelState.AddModelError("", "E-posta veya şifre hatalı!");
             return View();
         }
 
@@ -51,6 +53,24 @@ namespace BilalEmirMergenWebsite.Controllers
             await _db.SignOutAsync();
             HttpContext.Session.Remove("AdminUser");
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet("project/{id}")]
+        public async Task<IActionResult> GetProject(string id)
+        {
+            if (!IsAdminAuthenticated()) return Unauthorized();
+            var project = await _db.GetProjectByIdAsync(id);
+            if (project == null) return NotFound();
+            return Json(new { description = project.Description });
+        }
+
+        [HttpGet("article/{id}")]
+        public async Task<IActionResult> GetArticle(string id)
+        {
+            if (!IsAdminAuthenticated()) return Unauthorized();
+            var article = await _db.GetArticleByIdAsync(id);
+            if (article == null) return NotFound();
+            return Json(new { content = article.Content });
         }
 
         [HttpGet("dashboard")]
@@ -65,18 +85,11 @@ namespace BilalEmirMergenWebsite.Controllers
             ViewBag.ActiveTab = tab;
             ViewBag.UserEmail = HttpContext.Session.GetString("AdminUser");
 
-            // Fetch data in parallel
-            var articlesTask = _db.GetArticlesAsync();
-            var projectsTask = _db.GetProjectsAsync();
-            var socialsTask = _db.GetSocialsAsync();
-            var siteVisitsTask = _db.GetSiteVisitsAsync();
-
-            await Task.WhenAll(articlesTask, projectsTask, socialsTask, siteVisitsTask);
-
-            var articles = await articlesTask;
-            var projects = await projectsTask;
-            var socials = await socialsTask;
-            var siteVisits = await siteVisitsTask;
+            // Fetch data sequentially to avoid EF Core DbContext concurrency issues
+            var articles = await _db.GetArticlesAsync();
+            var projects = await _db.GetProjectsAsync();
+            var socials = await _db.GetSocialsAsync();
+            var siteVisits = await _db.GetSiteVisitsAsync();
 
             // Calculate total views in memory from already retrieved articles list to eliminate a DB query
             var totalViews = articles.Sum(a => a.Views);
@@ -130,9 +143,29 @@ namespace BilalEmirMergenWebsite.Controllers
         }
 
         [HttpPost("project/save")]
-        public async Task<IActionResult> SaveProject(string id, string title, string description, string imageUrl, string projectUrl, string tags)
+        public async Task<IActionResult> SaveProject(string id, string title, string description, string imageUrl, string projectUrl, string tags, IFormFile? imageFile)
         {
             if (!IsAdminAuthenticated()) return RedirectToAction("Login");
+
+            // Handle file upload if present
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsDir))
+                {
+                    Directory.CreateDirectory(uploadsDir);
+                }
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                var filePath = Path.Combine(uploadsDir, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+
+                imageUrl = "/uploads/" + fileName;
+            }
 
             var tagsList = string.IsNullOrEmpty(tags) 
                 ? new List<string>() 

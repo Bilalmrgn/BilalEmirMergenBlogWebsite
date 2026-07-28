@@ -4,13 +4,40 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Bilal Emir Mergen - Portfolyo, modern yazılım projeleri ve Medium tarzı kişisel blog yazıları." />
+    <meta name="keywords" content="Bilal Emir Mergen, Bilal Emir, Mergen, Software Developer, Full-Stack Developer, .NET Core, C#, Web Developer, Portfolyo, Blog" />
+    <meta name="author" content="Bilal Emir Mergen" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://bilalmergen.com/" />
+    <meta property="og:title" content="@ViewData["Title"] - Bilal Emir Mergen | Portfolyo & Blog" />
+    <meta property="og:description" content="Bilal Emir Mergen - Portfolyo, modern yazılım projeleri ve Medium tarzı kişisel blog yazıları." />
+    <meta property="og:image" content="~/favicon.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:url" content="https://bilalmergen.com/" />
+    <meta property="twitter:title" content="@ViewData["Title"] - Bilal Emir Mergen | Portfolyo & Blog" />
+    <meta property="twitter:description" content="Bilal Emir Mergen - Portfolyo, modern yazılım projeleri ve Medium tarzı kişisel blog yazıları." />
+    <meta property="twitter:image" content="~/favicon.png" />
+
     <title>@ViewData["Title"] - Bilal Emir Mergen | Portfolyo & Blog</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" />
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Theme Switch Script (Prevent Flash) -->
+    <script>
+        (function () {
+            var savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
     <!-- Custom styling -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     
@@ -26,15 +53,14 @@
                 
                 @if (Context.Session.GetString("AdminUser") != null)
                 {
-                    <a href="/admin/dashboard" class="btn-admin">
-                        <i data-lucide="layout-dashboard" style="width: 14px; height: 14px; margin-right: 5px; display: inline-block; vertical-align: middle;"></i>
-                        Dashboard
-                    </a>
+                    <a href="/admin/logout" class="btn-admin" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #f43f5e; margin-left: 0.25rem;">Çıkış Yap</a>
                 }
-                else
-                {
-                    <a href="/admin/login" class="btn-admin">Yönetici Girişi</a>
-                }
+                
+                <!-- Theme Toggle Button -->
+                <button type="button" id="theme-toggle" class="theme-toggle-btn" title="Temayı Değiştir" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; border-radius: 50%; transition: var(--transition-smooth); width: 36px; height: 36px; margin-left: 0.5rem;">
+                    <i data-lucide="sun" class="sun-icon" style="width: 18px; height: 18px; display: none;"></i>
+                    <i data-lucide="moon" class="moon-icon" style="width: 18px; height: 18px;"></i>
+                </button>
             </nav>
         </header>
 
@@ -58,9 +84,40 @@
         </footer>
     </div>
 
-    <!-- Initialize Lucide Icons -->
+    <!-- Initialize Lucide Icons & Theme Toggler -->
     <script>
-        lucide.createIcons();
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize lucide icons
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+
+            var toggleBtn = document.getElementById('theme-toggle');
+            if (toggleBtn) {
+                var sunIcon = toggleBtn.querySelector('.sun-icon');
+                var moonIcon = toggleBtn.querySelector('.moon-icon');
+                
+                function updateToggleIcons(theme) {
+                    if (theme === 'light') {
+                        sunIcon.style.display = 'block';
+                        moonIcon.style.display = 'none';
+                    } else {
+                        sunIcon.style.display = 'none';
+                        moonIcon.style.display = 'block';
+                    }
+                }
+                
+                var currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                updateToggleIcons(currentTheme);
+                
+                toggleBtn.addEventListener('click', function() {
+                    var newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateToggleIcons(newTheme);
+                });
+            }
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

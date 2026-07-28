@@ -1,21 +1,12 @@
-using Postgrest.Attributes;
-using Postgrest.Models;
+using System;
 
 namespace BilalEmirMergenWebsite.Models
 {
-    [Table("analytics")]
-    public class Analytics : BaseModel
+    public class Analytics
     {
-        [PrimaryKey("id", true)]
-        public string Id { get; set; } = string.Empty;
-
-        [Column("event_type")]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string EventType { get; set; } = "page_view";
-
-        [Column("page_path")]
         public string PagePath { get; set; } = string.Empty;
-
-        [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

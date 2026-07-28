@@ -1,21 +1,12 @@
-using Postgrest.Attributes;
-using Postgrest.Models;
+using System;
 
 namespace BilalEmirMergenWebsite.Models
 {
-    [Table("social_links")]
-    public class Social : BaseModel
+    public class Social
     {
-        [PrimaryKey("id", false)]
-        public string Id { get; set; } = string.Empty;
-
-        [Column("platform")]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = string.Empty;
-
-        [Column("icon")]
-        public string Icon { get; set; } = string.Empty; // e.g., "github", "linkedin", "mail", "globe"
-
-        [Column("url")]
+        public string Icon { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
     }
 }

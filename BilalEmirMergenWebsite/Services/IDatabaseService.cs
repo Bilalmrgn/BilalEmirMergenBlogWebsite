@@ -15,6 +15,7 @@ namespace BilalEmirMergenWebsite.Services
         // Articles
         Task<List<Article>> GetArticlesAsync();
         Task<Article?> GetArticleBySlugAsync(string slug);
+        Task<Article?> GetArticleByIdAsync(string id);
         Task IncrementArticleViewsAsync(string slug);
         Task<Article> AddArticleAsync(Article article);
         Task<Article> UpdateArticleAsync(string id, Article article);
@@ -22,6 +23,7 @@ namespace BilalEmirMergenWebsite.Services
 
         // Projects
         Task<List<Project>> GetProjectsAsync();
+        Task<Project?> GetProjectByIdAsync(string id);
         Task<Project> AddProjectAsync(Project project);
         Task<Project> UpdateProjectAsync(string id, Project project);
         Task DeleteProjectAsync(string id);

@@ -1,4 +1,7 @@
+using BilalEmirMergenWebsite.Data;
+using BilalEmirMergenWebsite.Models;
 using BilalEmirMergenWebsite.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,39 +16,66 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Configure Supabase or Fallback to Demo Mock Database Service
-var supabaseUrl = builder.Configuration["Supabase:Url"];
-var supabaseKey = builder.Configuration["Supabase:Key"];
-
-bool isSupabaseConfigured = !string.IsNullOrEmpty(supabaseUrl) && 
-                            supabaseUrl != "YOUR_SUPABASE_URL" && 
-                            !string.IsNullOrEmpty(supabaseKey) && 
-                            supabaseKey != "YOUR_SUPABASE_ANON_KEY";
-
-if (isSupabaseConfigured)
+// Configure AppDbContext with SQL Server
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 {
-    // Register real Supabase Client
-    var options = new Supabase.SupabaseOptions
+    options.UseSqlServer(connectionString);
+    var env = serviceProvider.GetRequiredService<IWebHostEnvironment>();
+    if (env.IsDevelopment())
     {
-        AutoConnectRealtime = false // Simple REST queries only
-    };
-    var supabaseClient = new Supabase.Client(supabaseUrl!, supabaseKey!, options);
-    builder.Services.AddSingleton(supabaseClient);
-    builder.Services.AddScoped<IDatabaseService, SupabaseDatabaseService>();
-}
-else
-{
-    // Register Demo Mock Database
-    builder.Services.AddSingleton<IDatabaseService, MockDatabaseService>();
-}
+        options.EnableSensitiveDataLogging()
+               .LogTo(Console.WriteLine, LogLevel.Information);
+    }
+});
+
+// Register SQL Server Database Service
+builder.Services.AddScoped<IDatabaseService, SqlDatabaseService>();
 
 var app = builder.Build();
+
+// Automatically create the database, tables, and seed default data on startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        // dbContext.Database.EnsureCreated(); // Uzak SQL sunucusunda her açılışta şema kontrolü yapıp yavaşlamaya neden olduğu için kapatıldı.
+
+        // Ensure the admin user exists and has the correct password hash
+        string expectedHash = Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes("Bilal.123")));
+        var admin = dbContext.AdminUsers.FirstOrDefault(u => u.Email == "admin@bilal.com");
+        if (admin == null)
+        {
+            dbContext.AdminUsers.Add(new AdminUser
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "admin@bilal.com",
+                PasswordHash = expectedHash
+            });
+            dbContext.SaveChanges();
+        }
+        else if (admin.PasswordHash != expectedHash)
+        {
+            admin.PasswordHash = expectedHash;
+            dbContext.SaveChanges();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Veritabanı oluşturulurken hata oluştu: {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
