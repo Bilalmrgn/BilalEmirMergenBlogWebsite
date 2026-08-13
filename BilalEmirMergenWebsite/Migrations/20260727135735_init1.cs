@@ -87,10 +87,6 @@ namespace BilalEmirMergenWebsite.Migrations
                     table.PrimaryKey("PK_Socials", x => x.Id);
                 });
 
-            migrationBuilder.InsertData(
-                table: "AdminUsers",
-                columns: new[] { "Id", "Email", "PasswordHash" },
-                values: new object[] { "1a8f906f-683a-4467-b5b6-7f414436573c", "admin@bilal.com", "JAvlGPq9JyTdtvBO6x2llnRI1+gxwIyPqCKAn3THIKk=" });
         }
 
         /// <inheritdoc />

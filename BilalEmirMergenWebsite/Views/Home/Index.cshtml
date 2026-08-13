@@ -1,366 +1,215 @@
 @model BilalEmirMergenWebsite.Controllers.HomeViewModel
+@using System.Text.RegularExpressions
+@using BilalEmirMergenWebsite.Controllers
+@functions {
+    string Key(string value) => Regex.Replace(value.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+    IReadOnlyList<string> Lines(string value) => value.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    int ReadTime(string html) => Math.Max(1, (int)Math.Ceiling(Regex.Replace(html ?? string.Empty, "<[^>]+>", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 220d));
+}
 @{
-    ViewData["Title"] = "Ana Sayfa";
+    var settings = Model.Settings;
+    var about = Model.AboutSections.FirstOrDefault() ?? new BilalEmirMergenWebsite.Models.AboutSection();
+    var profileImage = settings.ProfileImage.Or(about.ImageUrl);
+    var categories = Model.Projects.Select(item => item.CategoryEn.Or(item.Status).Or("Other")).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 }
 
-<!-- Demo Mode Alert Banner -->
-@if (ViewBag.IsDemo == true)
-{
-    <div class="banner">
-        <span>🚀 <strong>Demo Modu Aktif:</strong> Supabase bilgileri girilmediği için geçici bellek veritabanı (Mock) kullanılıyor.</span>
-        <span style="font-size: 0.8rem; opacity: 0.8;">(Verileriniz uygulama kapanana kadar hafızada saklanır)</span>
-    </div>
-}
+<div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
+<div class="drawer-backdrop" data-drawer-backdrop></div>
 
-<!-- Hero / Recruiter-friendly Intro Section -->
-<section class="hero-section">
-    <div class="hero-glow"></div>
-    
-
-    
-    <h1 class="hero-title">Bilal Emir Mergen</h1>
-    <h2 style="font-size: 1.8rem; color: var(--primary-light); font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.01em;">
-        Full-Stack Software Developer
-    </h2>
-    
-    <div class="hero-subtitle" style="font-size: 1.1rem; color: var(--text-muted); max-width: 800px; line-height: 1.7; display: flex; flex-direction: column; gap: 1rem;">
-        <p>Web tabanlı yazılım geliştirme projelerinde aktif olarak görev almış, backend odaklı çalışan bir yazılım geliştiricisiyim.</p>
-        <p>Birkaç ay süren stajım boyunca API geliştirme, veri işleme ve uygulama içi veri akışları üzerine çalıştım; backend süreçlerini frontend ile entegre edecek çözümler geliştirdim.</p>
-        <p>Bu süreçte farklı mimari yaklaşımlar ve yazılım teknolojileri kullanarak mevcut projelerde iyileştirmeler yaptım. Kodun okunabilirliği, sürdürülebilirliği ve güvenliği üzerine özellikle odaklandım.</p>
-        <p>Üniversite eğitimimle birlikte pratik tecrübe kazandığım bu alanlarda kendimi geliştirmeye devam ediyor, yazılım geliştirme ve problem çözme motivasyonuyla kariyerime yön veriyorum.</p>
-    </div>
-
-    <!-- Static Social Links -->
-    <div style="display: flex; gap: 1rem; margin: 0.5rem 0 1.5rem 0;">
-        <a href="https://github.com/Bilalmrgn" target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: var(--transition-smooth);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-        </a>
-        <a href="https://www.linkedin.com/in/bilalmrgn/" target="_blank" rel="noopener noreferrer" class="social-icon" title="LinkedIn" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: var(--transition-smooth);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
-        </a>
-        <a href="mailto:bilal.emir.mergen@hotmail.com" class="social-icon" title="E-Posta" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: var(--transition-smooth);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-        </a>
-    </div>
-</section>
-    
-    <!-- Skills / Tech Stack Section (Extremely Recruiter Friendly) -->
-    <section class="section-container" style="border-top: 1px solid var(--card-border); padding-top: 3.5rem;">
-        <h2 class="section-title">
-            <i data-lucide="cpu" style="color: var(--primary); margin-right: 8px;"></i>
-            Yetenekler & Teknolojiler
-        </h2>
-        
-        <div class="skills-grid-container">
-            
-            <!-- Card 1: Backend & Frameworks -->
-            <div class="skills-card-group">
-                <div class="skills-group-title">
-                    <i data-lucide="wrench" style="width: 16px; height: 16px; color: var(--primary);"></i>
-                    Backend & Frameworks
-                </div>
-                <div class="skills-tiles-grid">
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title=".NET Core">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dot-net/dot-net-original.svg" alt=".NET Core" />
-                        </div>
-                        <div class="skill-tile-name">.NET Core</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="Node.js">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" alt="Node.js" />
-                        </div>
-                        <div class="skill-tile-name">Node.js</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="Express" style="background: #111;">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg" alt="Express" style="filter: invert(1);" />
-                        </div>
-                        <div class="skill-tile-name">Express</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="C#">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg" alt="C#" />
-                        </div>
-                        <div class="skill-tile-name">C#</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="JavaScript">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" />
-                        </div>
-                        <div class="skill-tile-name">JavaScript</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="TypeScript">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg" alt="TypeScript" />
-                        </div>
-                        <div class="skill-tile-name">TypeScript</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 2: Databases & Messaging -->
-            <div class="skills-card-group">
-                <div class="skills-group-title">
-                    <i data-lucide="database" style="width: 16px; height: 16px; color: var(--primary);"></i>
-                    Databases & Messaging
-                </div>
-                <div class="skills-tiles-grid">
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="MySQL">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" alt="MySQL" />
-                        </div>
-                        <div class="skill-tile-name">MySQL</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="MongoDB">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg" alt="MongoDB" />
-                        </div>
-                        <div class="skill-tile-name">MongoDB</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="Redis">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redis/redis-original.svg" alt="Redis" />
-                        </div>
-                        <div class="skill-tile-name">Redis</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="RabbitMQ">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/rabbitmq/rabbitmq-original.svg" alt="RabbitMQ" />
-                        </div>
-                        <div class="skill-tile-name">RabbitMQ</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3: Frontend Technologies -->
-            <div class="skills-card-group">
-                <div class="skills-group-title">
-                    <i data-lucide="palette" style="width: 16px; height: 16px; color: var(--primary);"></i>
-                    Frontend Technologies
-                </div>
-                <div class="skills-tiles-grid">
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="Angular">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/angular/angular-original.svg" alt="Angular" />
-                        </div>
-                        <div class="skill-tile-name">Angular</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="HTML5">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5" />
-                        </div>
-                        <div class="skill-tile-name">HTML5</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="CSS3">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3" />
-                        </div>
-                        <div class="skill-tile-name">CSS3</div>
-                    </div>
-                    <div class="skill-tile-item">
-                        <div class="skill-tile-logo-wrapper" title="Bootstrap">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap" />
-                        </div>
-                        <div class="skill-tile-name">Bootstrap</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Full Width Card 4: Architecture & Concepts -->
-            <div class="skills-concepts-group">
-                <div class="skills-group-title" style="border: none; padding-bottom: 0;">
-                    <i data-lucide="brain" style="width: 16px; height: 16px; color: var(--primary);"></i>
-                    Mimariler & Konseptler
-                </div>
-                <div class="concepts-pills-wrap">
-                    <span class="concept-pill">RESTful API</span>
-                    <span class="concept-pill">GraphQL</span>
-                    <span class="concept-pill">JWT Authentication</span>
-                    <span class="concept-pill">OAuth 2.0</span>
-                    <span class="concept-pill">Onion Architecture</span>
-                    <span class="concept-pill">N-Tier Architecture</span>
-                    <span class="concept-pill">Microservices</span>
-                </div>
-            </div>
-            
-        </div>
-    </section>
-
-<!-- Projects Showcase -->
-<section id="projects" class="section-container" style="border-top: 1px solid var(--card-border);">
-    <h2 class="section-title">
-        <i data-lucide="briefcase" style="color: var(--secondary); margin-right: 8px;"></i>
-        Projelerim
-    </h2>
-
-    @if (!Model.Projects.Any())
-    {
-        <div class="glass-card" style="text-align: center; padding: 3rem;">
-            <p style="color: var(--text-muted);">Henüz proje eklenmemiş.</p>
-        </div>
-    }
-    else
-    {
-        <div class="projects-grid">
-            @foreach (var proj in Model.Projects)
+<div class="portfolio-shell">
+    <aside class="portfolio-sidebar" aria-label="Profile and portfolio navigation">
+        <a class="sidebar-mark" href="#about" aria-label="Back to introduction"><span>BM</span><small>PORTFOLIO</small></a>
+        <div class="sidebar-profile">
+            @if (!string.IsNullOrWhiteSpace(profileImage))
             {
-                <div class="glass-card project-card">
-                    @if (!string.IsNullOrEmpty(proj.ImageUrl))
-                    {
-                        <img src="@proj.ImageUrl" alt="@proj.Title" class="project-image" onerror="this.src='https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80'" />
-                    }
-                    <h3 class="project-title">@proj.Title</h3>
-                    <p class="project-desc">@StripHtml(proj.Description)</p>
-                    
-
-
-                    <a href="javascript:void(0)" onclick="openProjectModal('@proj.Id', '@JavaScriptStringEncode(proj.Title)', '@JavaScriptStringEncode(proj.ImageUrl)', '@JavaScriptStringEncode(proj.ProjectUrl)', '@JavaScriptStringEncode(string.Join(", ", proj.Tags ?? new List<string>()))')" class="project-link">
-                        Detayları İncele <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
-                    </a>
-                </div>
+                <img src="@profileImage" alt="Portrait of @settings.FullName" width="116" height="116" fetchpriority="high" />
+            }
+            else
+            {
+                <div class="profile-fallback" aria-hidden="true">BM</div>
+            }
+            <h1>@settings.FullName.Or("Bilal Emir Mergen")</h1>
+            <p>@settings.TitleEn.Or("Full Stack Software Engineer")</p>
+        </div>
+        <nav class="portfolio-nav" aria-label="Portfolio sections">
+            <a class="active" href="#about"><span>01</span>About</a>
+            @if (Model.Experiences.Any()) { <a href="#experience"><span>02</span>Experience</a> }
+            @if (Model.Educations.Any()) { <a href="#education"><span>03</span>Education</a> }
+            @if (Model.SkillCategories.Any()) { <a href="#skills"><span>04</span>Skills</a> }
+            @if (Model.Projects.Any()) { <a href="#projects"><span>05</span>Projects</a> }
+            @if (Model.Languages.Any()) { <a href="#languages"><span>06</span>Languages</a> }
+            @if (Model.Articles.Any()) { <a href="#blog"><span>07</span>Blog</a> }
+            <a href="#contact"><span>08</span>Contact</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-socials">
+                @foreach (var social in Model.Socials)
+                {
+                    <a href="@social.Url" target="@(social.Url.StartsWith("mailto:") ? null : "_blank")" rel="noreferrer" aria-label="@social.Name"><i data-lucide="@social.Icon"></i></a>
+                }
+            </div>
+            @if (settings.IsAvailable)
+            {
+                <p class="availability"><span></span>@settings.AvailabilityEn.Or("Available for selected work")</p>
             }
         </div>
-    }
-</section>
+    </aside>
 
-<!-- Blog Section -->
-<section class="section-container" style="border-top: 1px solid var(--card-border);">
-    <h2 class="section-title">
-        <i data-lucide="book-open" style="color: var(--primary); margin-right: 8px;"></i>
-        Yazılarım
-    </h2>
-
-    @if (!Model.Articles.Any())
-    {
-        <div class="glass-card" style="text-align: center; padding: 3rem;">
-            <p style="color: var(--text-muted);">Henüz blog yazısı eklenmemiş.</p>
-        </div>
-    }
-    else
-    {
-        <div class="blog-grid">
-            @foreach (var post in Model.Articles)
-            {
-                <a href="/blog/@post.Slug" class="glass-card blog-card">
-                    @if (!string.IsNullOrEmpty(post.CoverImage))
-                    {
-                        <img src="@post.CoverImage" alt="@post.Title" class="blog-card-image" onerror="this.src='https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80'" />
-                    }
-                    <div class="blog-card-content">
-                        <div class="blog-card-meta">
-                            <span>@post.CreatedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</span>
-                        </div>
-                        <h3 class="blog-card-title">@post.Title</h3>
-                        <p class="blog-card-summary">@post.Summary</p>
+    <div class="portfolio-content">
+        <section class="portfolio-section about-section" id="about" aria-labelledby="about-title">
+            <header class="section-heading" data-reveal>
+                <p>@about.EyebrowEn.Or("Welcome")</p>
+                <h2 id="about-title">@about.TitleEn.Or("About me")</h2>
+            </header>
+            <div class="about-layout">
+                <div class="about-copy" data-reveal>
+                    <p class="about-intro">@about.ShortTextEn.Or(settings.IntroEn)</p>
+                    <div class="rich-content article-prose about-prose">@Html.Raw(about.DescriptionEn)</div>
+                    <div class="about-actions">
+                        @if (!string.IsNullOrWhiteSpace(settings.CvEnglishFile)) { <a class="primary-button" href="@settings.CvEnglishFile" target="_blank"><i data-lucide="download"></i>Download résumé</a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.Email)) { <a class="text-button" href="mailto:@settings.Email">Let’s talk<i data-lucide="arrow-up-right"></i></a> }
                     </div>
-                </a>
-            }
-        </div>
-    }
-</section>
-
-<!-- Project Detail Modal -->
-<div id="projectDetailModal" class="project-modal" style="display: none;">
-    <div class="project-modal-backdrop" onclick="closeProjectModal()"></div>
-    <div class="project-modal-content">
-        <button class="project-modal-close" onclick="closeProjectModal()">&times;</button>
-        <div class="project-modal-body">
-            <img id="modal-project-image" src="" alt="" class="modal-project-image" style="display: none;" />
-            <h2 id="modal-project-title" class="modal-project-title"></h2>
-            <div id="modal-project-tags" class="project-tags" style="margin-top: 0.75rem; margin-bottom: 1.5rem;"></div>
-            <div id="modal-project-desc" class="modal-project-desc"></div>
-            
-            <div class="modal-project-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <a id="modal-project-url" href="" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                    Projeyi Ziyaret Et / GitHub
-                </a>
-                <button type="button" class="btn-secondary" onclick="closeProjectModal()">Kapat</button>
+                </div>
+                <dl class="about-facts" data-reveal>
+                    @if (!string.IsNullOrWhiteSpace(settings.TitleEn)) { <div><dt>Role</dt><dd>@settings.TitleEn</dd></div> }
+                    @if (!string.IsNullOrWhiteSpace(settings.LocationEn)) { <div><dt>Based in</dt><dd>@settings.LocationEn</dd></div> }
+                    @if (!string.IsNullOrWhiteSpace(settings.Email)) { <div><dt>Email</dt><dd><a href="mailto:@settings.Email">@settings.Email</a></dd></div> }
+                    <div><dt>Focus</dt><dd>Product engineering · Web systems</dd></div>
+                </dl>
             </div>
-        </div>
+        </section>
+
+        @if (Model.Experiences.Any())
+        {
+            <section class="portfolio-section" id="experience" aria-labelledby="experience-title">
+                <header class="section-heading" data-reveal><p>Professional journey</p><h2 id="experience-title">Work experience</h2></header>
+                <div class="timeline-list">
+                    @foreach (var item in Model.Experiences)
+                    {
+                        var bullets = Lines(item.BulletPointsEn.Or(item.BulletPointsTr));
+                        <article class="timeline-entry" style="--timeline-accent:@item.TimelineColor.Or("#2F9CF4")" data-reveal>
+                            <div class="timeline-dot">@if (!string.IsNullOrWhiteSpace(item.CompanyLogoUrl)) { <img src="@item.CompanyLogoUrl" alt="" loading="lazy" /> } else { <i data-lucide="@item.Icon"></i> }</div>
+                            <div class="timeline-card">
+                                <div class="timeline-card-head"><div><h3>@item.RoleEn.Or(item.RoleTr)</h3><p>@item.CompanyName@if (!string.IsNullOrWhiteSpace(item.LocationEn)) { <span> · @item.LocationEn</span> }</p></div><time>@item.StartDate.ToString("MMM yyyy") — @(item.IsCurrent ? "Present" : item.EndDate?.ToString("MMM yyyy"))</time></div>
+                                @if (!string.IsNullOrWhiteSpace(item.DescriptionEn)) { <p>@item.DescriptionEn</p> }
+                                @if (bullets.Count > 0) { <ul>@foreach (var bullet in bullets) { <li>@bullet</li> }</ul> }
+                                <div class="tag-list">@foreach (var technology in item.Technologies.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)) { <span>@technology</span> }</div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.Educations.Any())
+        {
+            <section class="portfolio-section" id="education" aria-labelledby="education-title">
+                <header class="section-heading" data-reveal><p>Academic path</p><h2 id="education-title">Education</h2></header>
+                <div class="timeline-list education-timeline">
+                    @foreach (var item in Model.Educations)
+                    {
+                        <article class="timeline-entry" style="--timeline-accent:@item.TimelineColor.Or("#9B6CF0")" data-reveal>
+                            <div class="timeline-dot">@if (!string.IsNullOrWhiteSpace(item.LogoUrl)) { <img src="@item.LogoUrl" alt="" loading="lazy" /> } else { <i data-lucide="graduation-cap"></i> }</div>
+                            <div class="timeline-card">
+                                <div class="timeline-card-head"><div>@if (item.IsExchangeProgram) { <span class="card-badge">Exchange program</span> }<h3>@item.DegreeEn.Or(item.FieldEn)</h3><p>@item.SchoolName@if (!string.IsNullOrWhiteSpace(item.LocationEn)) { <span> · @item.LocationEn</span> }</p></div><time>@item.StartDate?.ToString("MMM yyyy") — @(item.IsCurrent ? "Present" : item.EndDate?.ToString("MMM yyyy"))</time></div>
+                                @if (!string.IsNullOrWhiteSpace(item.FieldEn) && item.FieldEn != item.DegreeEn) { <strong class="timeline-field">@item.FieldEn</strong> }
+                                @if (!string.IsNullOrWhiteSpace(item.DescriptionEn)) { <p>@item.DescriptionEn</p> }
+                            </div>
+                        </article>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.SkillCategories.Any())
+        {
+            <section class="portfolio-section skills-section" id="skills" aria-labelledby="skills-title">
+                <header class="section-heading" data-reveal><p>Technical toolkit</p><h2 id="skills-title">Skills & technologies</h2><span>Tools I use to turn thoughtful ideas into reliable products.</span></header>
+                <div class="public-skill-groups">
+                    @foreach (var category in Model.SkillCategories)
+                    {
+                        <section class="public-skill-group" style="--category-accent:@category.AccentColor.Or("#2F9CF4")">
+                            <header data-reveal>
+                                <span><i data-lucide="@category.Icon"></i></span>
+                                <div><h3>@category.NameEn.Or(category.NameTr)</h3><p>@category.DescriptionEn.Or("Technologies used in production work")</p></div>
+                                <small>@category.Skills.Count @(category.Skills.Count == 1 ? "technology" : "technologies")</small>
+                            </header>
+                            <div class="public-skill-grid">
+                                @foreach (var skill in category.Skills)
+                                {
+                                    <article class="public-skill-card" data-reveal>
+                                        <partial name="_TechnologyIcon" model='new TechnologyIconViewModel(skill.Name, skill.Icon, skill.IconType, skill.IconUrl, skill.BrandColor, 58)' />
+                                        <h4>@skill.Name</h4>
+                                        <p>@skill.DescriptionEn.Or(skill.DescriptionTr).Or(category.NameEn)</p>
+                                    </article>
+                                }
+                            </div>
+                        </section>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.Projects.Any())
+        {
+            <section class="portfolio-section" id="projects" aria-labelledby="projects-title">
+                <header class="section-heading" data-reveal><p>Selected work</p><h2 id="projects-title">Projects</h2></header>
+                <div class="project-filters" role="group" aria-label="Filter projects" data-reveal><button class="active" type="button" data-project-filter="all" aria-pressed="true">All</button>@foreach (var category in categories) { <button type="button" data-project-filter="@Key(category)" aria-pressed="false">@category</button> }</div>
+                <div class="project-grid">
+                    @foreach (var item in Model.Projects)
+                    {
+                        var title = item.TitleEn.Or(item.Title);
+                        var category = item.CategoryEn.Or(item.Status).Or("Other");
+                        <article class="project-card" data-project-category="@Key(category)" data-reveal>
+                            <a class="project-image" href="/en/projects/@item.Slug" aria-label="View @title case study">@if (!string.IsNullOrWhiteSpace(item.ImageUrl)) { <img src="@item.ImageUrl" alt="@title project preview" loading="lazy" /> } else { <div><i data-lucide="code-2"></i><span>@title</span></div> }@if (item.IsFeatured) { <span class="featured-badge"><i data-lucide="star"></i>Featured</span> }</a>
+                            <div class="project-card-body"><p class="project-category">@category</p><h3><a href="/en/projects/@item.Slug">@title</a></h3><p>@item.ShortDescriptionEn.Or(item.DescriptionEn.PlainSummary())</p><div class="tag-list">@foreach (var tag in item.Tags.Take(5)) { <span>@tag</span> }</div><div class="project-links"><a href="/en/projects/@item.Slug">Case study<i data-lucide="arrow-up-right"></i></a>@if (!string.IsNullOrWhiteSpace(item.GitHubUrl)) { <a href="@item.GitHubUrl" target="_blank" rel="noreferrer" aria-label="GitHub"><i data-lucide="github"></i></a> }@if (!string.IsNullOrWhiteSpace(item.ProjectUrl)) { <a href="@item.ProjectUrl" target="_blank" rel="noreferrer" aria-label="Live demo"><i data-lucide="external-link"></i></a> }</div></div>
+                        </article>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.Languages.Any())
+        {
+            <section class="portfolio-section" id="languages" aria-labelledby="languages-title">
+                <header class="section-heading" data-reveal><p>Communication</p><h2 id="languages-title">Languages</h2></header>
+                <div class="language-cards">
+                    @foreach (var item in Model.Languages)
+                    {
+                        <article class="language-card" data-reveal><div><i data-lucide="@item.Icon.Or("languages")"></i></div><h3>@item.NameEn.Or(item.NameTr)</h3><p>@item.LevelEn.Or(item.LevelTr)</p>@if (!string.IsNullOrWhiteSpace(item.CefrLevel)) { <span>@item.CefrLevel</span> }</article>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.Articles.Any())
+        {
+            <section class="portfolio-section" id="blog" aria-labelledby="blog-title">
+                <header class="section-heading" data-reveal><p>Writing & ideas</p><h2 id="blog-title">Latest from the blog</h2></header>
+                <div class="blog-grid">
+                    @foreach (var item in Model.Articles)
+                    {
+                        var title = item.TitleEn.Or(item.Title);
+                        var url = item.IsInternal ? $"/en/blog/{item.Slug}" : item.ExternalUrl;
+                        <article class="blog-card" data-reveal>
+                            <a class="blog-image" href="@url">
+                                @if (!string.IsNullOrWhiteSpace(item.CoverImage)) { <img src="@item.CoverImage" alt="@title" loading="lazy" data-image-fallback /> }
+                                <span class="image-placeholder"><i data-lucide="file-text"></i><small>Bilal Emir Mergen</small></span>
+                            </a>
+                            <div><div class="blog-meta"><span>@item.CategoryEn.Or("Engineering")</span><time>@(item.PublishedAt ?? item.CreatedAt).ToString("MMM d, yyyy") · @ReadTime(item.ContentEn.Or(item.Content)) min read</time></div><h3><a href="@url">@title</a></h3><p>@item.SummaryEn.Or(item.Summary)</p><a class="read-more" href="@url" target="@(!item.IsInternal ? "_blank" : null)">Read article<i data-lucide="arrow-right"></i></a></div>
+                        </article>
+                    }
+                </div>
+            </section>
+        }
+
+        <section class="contact-section" id="contact" aria-labelledby="contact-title" data-reveal>
+            <p>Have a project or opportunity?</p>
+            <h2 id="contact-title">@settings.ContactTitleEn.Or("Let’s build something useful.")</h2>
+            <div class="contact-row"><p>@settings.ContactTextEn.Or("I’m always interested in thoughtful products, ambitious teams, and engineering challenges worth solving.")</p>@if (!string.IsNullOrWhiteSpace(settings.Email)) { <a class="primary-button" href="mailto:@settings.Email">Start a conversation<i data-lucide="arrow-up-right"></i></a> }</div>
+            <div class="contact-socials">@foreach (var social in Model.Socials) { <a href="@social.Url" target="@(social.Url.StartsWith("mailto:") ? null : "_blank")" rel="noreferrer"><i data-lucide="@social.Icon"></i>@social.Name</a> }</div>
+        </section>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        function openProjectModal(id, title, imageUrl, projectUrl, tagsString) {
-            document.getElementById('modal-project-title').innerText = title;
-            document.getElementById('modal-project-desc').innerHTML = '<div style="text-align:center; padding:2rem;"><span class="status-dot" style="background-color:var(--primary); width:8px; height:8px; display:inline-block; border-radius:50%; animation:pulse-glow 2s infinite;"></span> Yükleniyor...</div>';
-            
-            fetch('/project/description/' + id)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('modal-project-desc').innerHTML = data.description || '';
-                })
-                .catch(err => {
-                    document.getElementById('modal-project-desc').innerHTML = '<p style="color:var(--accent);">Proje detayları yüklenirken hata oluştu.</p>';
-                });
-            
-            var img = document.getElementById('modal-project-image');
-            if (imageUrl) {
-                img.src = imageUrl;
-                img.style.display = 'block';
-            } else {
-                img.style.display = 'none';
-            }
-            
-            var actionBtn = document.getElementById('modal-project-url');
-            if (projectUrl) {
-                actionBtn.href = projectUrl;
-                actionBtn.style.display = 'inline-flex';
-            } else {
-                actionBtn.style.display = 'none';
-            }
-            
-            var tagsContainer = document.getElementById('modal-project-tags');
-            tagsContainer.innerHTML = '';
-            if (tagsString) {
-                var tags = tagsString.split(',').map(t => t.trim()).filter(t => t.length > 0);
-                tags.forEach(tag => {
-                    var span = document.createElement('span');
-                    span.className = 'project-tag';
-                    span.innerText = tag;
-                    tagsContainer.appendChild(span);
-                });
-            }
-            
-            document.getElementById('projectDetailModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
-        }
-        
-        function closeProjectModal() {
-            document.getElementById('projectDetailModal').style.display = 'none';
-            document.body.style.overflow = '';
-        }
-        
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeProjectModal();
-            }
-        });
-    </script>
-}
-
-@functions {
-    public static string StripHtml(string html)
-    {
-        if (string.IsNullOrEmpty(html)) return "";
-        var plain = System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
-        plain = System.Net.WebUtility.HtmlDecode(plain);
-        if (plain.Length > 150) {
-            plain = plain.Substring(0, 147) + "...";
-        }
-        return plain;
-    }
-
-    public static string JavaScriptStringEncode(string value)
-    {
-        if (string.IsNullOrEmpty(value)) return "";
-        return System.Web.HttpUtility.JavaScriptStringEncode(value);
-    }
-}
+<button class="scroll-top" type="button" data-scroll-top aria-label="Back to top"><i data-lucide="arrow-up"></i></button>

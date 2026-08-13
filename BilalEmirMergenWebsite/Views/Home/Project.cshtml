@@ -1,0 +1,24 @@
+@model BilalEmirMergenWebsite.Models.Project
+@using BilalEmirMergenWebsite.Controllers
+@{
+    var title = Model.TitleEn.Or(Model.Title);
+    var summary = Model.ShortDescriptionEn.Or(Model.DescriptionEn.PlainSummary());
+    var gallery = Model.Screenshots.Split(new[] { ',', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+<article class="detail-page project-detail">
+    <a class="back-link" href="/en#projects"><i data-lucide="arrow-left"></i>Back to projects</a>
+    <header class="detail-hero">
+        <div><p class="detail-kicker">@Model.CategoryEn.Or(Model.Status)</p><h1>@title</h1><p>@summary</p><div class="detail-actions">@if (!string.IsNullOrWhiteSpace(Model.ProjectUrl)) { <a class="primary-button" href="@Model.ProjectUrl" target="_blank" rel="noreferrer">View live project<i data-lucide="arrow-up-right"></i></a> }@if (!string.IsNullOrWhiteSpace(Model.GitHubUrl)) { <a class="secondary-button" href="@Model.GitHubUrl" target="_blank" rel="noreferrer"><i data-lucide="github"></i>Source code</a> }</div></div>
+        <dl><div><dt>Role</dt><dd>Full Stack Engineer</dd></div>@if (Model.StartDate.HasValue) { <div><dt>Timeline</dt><dd>@Model.StartDate.Value.ToString("MMM yyyy") — @(Model.EndDate?.ToString("MMM yyyy") ?? "Present")</dd></div> }@if (!string.IsNullOrWhiteSpace(Model.Architecture)) { <div><dt>Architecture</dt><dd>@Model.Architecture</dd></div> }</dl>
+    </header>
+    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl)) { <figure class="detail-cover"><img src="@Model.ImageUrl" alt="@title project interface" fetchpriority="high" /></figure> }
+    <div class="detail-content-layout">
+        <div class="rich-content article-prose">@Html.Raw(Model.DescriptionEn.Or(Model.Description))</div>
+        <aside class="detail-aside"><p>Built with</p><div class="tag-list">@foreach (var tag in Model.Tags) { <span>@tag</span> }</div>@if (!string.IsNullOrWhiteSpace(Model.CaseStudyUrl)) { <a href="@Model.CaseStudyUrl" target="_blank" rel="noreferrer">External case study<i data-lucide="arrow-up-right"></i></a> }</aside>
+    </div>
+    @if (gallery.Length > 0)
+    {
+        <section class="detail-gallery" aria-labelledby="gallery-title"><header class="section-heading"><p>Inside the product</p><h2 id="gallery-title">Project gallery</h2></header><div>@foreach (var image in gallery) { <img src="@image" alt="@title interface detail" loading="lazy" /> }</div></section>
+    }
+    <nav class="detail-end"><a href="/en#projects"><i data-lucide="grid-2x2"></i>Explore more projects</a></nav>
+</article>

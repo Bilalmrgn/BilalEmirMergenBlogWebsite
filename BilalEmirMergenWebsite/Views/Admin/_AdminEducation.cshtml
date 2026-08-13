@@ -1,0 +1,25 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@{ var item = Model.Educations.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Education { TimelineColor = "#9B6CF0" }; }
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Academic timeline</p><h2>Education</h2></div><a class="btn" href="/en#education" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
+<partial name="_OrderedTable" model='new BilalEmirMergenWebsite.Controllers.OrderedTableViewModel("education", Model.Educations.Select(value => (value.Id, value.DegreeEn, value.SchoolName, value.SortOrder, value.IsActive)))' />
+<form class="admin-editor admin-form open" method="post" action="/admin/education/save" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="LogoUrl" value="@item.LogoUrl" />
+    <input type="hidden" name="DegreeTr" value="@item.DegreeTr" /><input type="hidden" name="DegreeAr" value="@item.DegreeAr" /><input type="hidden" name="FieldTr" value="@item.FieldTr" /><input type="hidden" name="FieldAr" value="@item.FieldAr" /><input type="hidden" name="LocationTr" value="@item.LocationTr" /><input type="hidden" name="LocationAr" value="@item.LocationAr" /><input type="hidden" name="DescriptionTr" value="@item.DescriptionTr" /><input type="hidden" name="DescriptionAr" value="@item.DescriptionAr" /><input type="hidden" name="BulletPointsTr" value="@item.BulletPointsTr" /><input type="hidden" name="BulletPointsAr" value="@item.BulletPointsAr" />
+    <div class="form-grid">
+        <div class="form-field"><label>School / university</label><input class="form-control" name="SchoolName" value="@item.SchoolName" required /></div>
+        <div class="form-field"><label>Degree</label><input class="form-control" name="DegreeEn" value="@item.DegreeEn" /></div>
+        <div class="form-field"><label>Department</label><input class="form-control" name="FieldEn" value="@item.FieldEn" /></div>
+        <div class="form-field"><label>Location</label><input class="form-control" name="LocationEn" value="@item.LocationEn" /></div>
+        <div class="form-field"><label>Start date</label><input class="form-control" type="date" name="StartDate" value="@item.StartDate?.ToString("yyyy-MM-dd")" /></div>
+        <div class="form-field"><label>End date</label><input class="form-control" type="date" name="EndDate" value="@item.EndDate?.ToString("yyyy-MM-dd")" /></div>
+        <div class="form-field full"><label>Description</label><textarea class="form-control" name="DescriptionEn">@item.DescriptionEn</textarea></div>
+        <div class="form-field full"><label>Highlights <small>one per line</small></label><textarea class="form-control" name="BulletPointsEn">@item.BulletPointsEn</textarea></div>
+        <div class="form-field"><label>School website</label><input class="form-control" type="url" name="SchoolUrl" value="@item.SchoolUrl" /></div>
+        <div class="form-field"><label>School logo</label><input class="form-control" type="file" name="logoFile" accept=".png,.jpg,.jpeg,.webp" data-image-input /></div>
+        <label class="form-check"><input type="checkbox" name="IsExchangeProgram" value="true" checked="@item.IsExchangeProgram" /><input type="hidden" name="IsExchangeProgram" value="false" />Exchange program</label>
+        <label class="form-check"><input type="checkbox" name="IsCurrent" value="true" checked="@item.IsCurrent" /><input type="hidden" name="IsCurrent" value="false" />Currently studying</label>
+        <div class="form-field"><label>Timeline accent</label><input class="form-control color-input" type="color" name="TimelineColor" value="@(string.IsNullOrWhiteSpace(item.TimelineColor) ? "#9B6CF0" : item.TimelineColor)" /></div>
+        <partial name="_OrderActiveFields" model="item" />
+    </div>
+    <partial name="_FormActions" />
+</form>

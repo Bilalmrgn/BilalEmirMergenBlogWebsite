@@ -1,0 +1,30 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@using BilalEmirMergenWebsite.Controllers
+@{ var item = Model.Projects.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Project(); }
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Selected work</p><h2>Projects</h2></div>@if (!string.IsNullOrWhiteSpace(item.Slug)) { <a class="btn" href="/en/projects/@item.Slug" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a> }</div>
+<partial name="_OrderedTable" model='new OrderedTableViewModel("project", Model.Projects.Select(value => (value.Id, value.TitleEn.Or(value.Title), value.CategoryEn.Or(value.Status), value.SortOrder, value.IsActive)))' />
+<form class="admin-editor admin-form open" method="post" action="/admin/project/save" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="Title" value="@item.Title" /><input type="hidden" name="Description" value="@item.Description" /><input type="hidden" name="ImageUrl" value="@item.ImageUrl" />
+    <input type="hidden" name="TitleTr" value="@item.TitleTr" /><input type="hidden" name="TitleAr" value="@item.TitleAr" /><input type="hidden" name="CategoryTr" value="@item.CategoryTr" /><input type="hidden" name="CategoryAr" value="@item.CategoryAr" /><input type="hidden" name="ShortDescriptionTr" value="@item.ShortDescriptionTr" /><input type="hidden" name="ShortDescriptionAr" value="@item.ShortDescriptionAr" /><input type="hidden" name="DescriptionTr" value="@item.DescriptionTr" /><input type="hidden" name="DescriptionAr" value="@item.DescriptionAr" />
+    <div class="form-grid">
+        <div class="form-field"><label>Project title</label><input class="form-control" name="TitleEn" value="@item.TitleEn" required /></div>
+        <div class="form-field"><label>Category</label><input class="form-control" name="CategoryEn" value="@item.CategoryEn" placeholder="Full Stack" required /></div>
+        <div class="form-field full"><label>Slug</label><input class="form-control" name="Slug" value="@item.Slug" placeholder="generated-from-title" /></div>
+        <div class="form-field full"><label>Short description</label><textarea class="form-control" name="ShortDescriptionEn" maxlength="600">@item.ShortDescriptionEn</textarea></div>
+        <partial name="_RichTextEditor" model='new RichTextEditorViewModel("DescriptionEn", item.DescriptionEn, "Full case study", "Select text to format it—just like a document editor.", "340px")' />
+        <div class="form-field"><label>Cover image</label><input class="form-control" type="file" name="imageFile" accept=".png,.jpg,.jpeg,.webp" data-image-input /></div>
+        <div class="form-field"><label>Gallery images</label><input class="form-control" type="file" name="galleryFiles" accept=".png,.jpg,.jpeg,.webp" multiple data-image-input /></div>
+        <div class="form-field full"><label>Existing gallery paths</label><textarea class="form-control compact" name="Screenshots">@item.Screenshots</textarea></div>
+        <div class="form-field"><label>GitHub URL</label><input class="form-control" type="url" name="GitHubUrl" value="@item.GitHubUrl" /></div>
+        <div class="form-field"><label>Live demo URL</label><input class="form-control" type="url" name="ProjectUrl" value="@item.ProjectUrl" /></div>
+        <div class="form-field"><label>Case study URL</label><input class="form-control" type="url" name="CaseStudyUrl" value="@item.CaseStudyUrl" /></div>
+        <div class="form-field"><label>Status label</label><input class="form-control" name="Status" value="@item.Status" /></div>
+        <div class="form-field full"><label>Technologies <small>comma separated</small></label><input class="form-control" name="tagsText" value="@string.Join(", ", item.Tags)" /></div>
+        <div class="form-field full"><label>Architecture note</label><input class="form-control" name="Architecture" value="@item.Architecture" /></div>
+        <div class="form-field"><label>Start date</label><input class="form-control" type="date" name="StartDate" value="@item.StartDate?.ToString("yyyy-MM-dd")" /></div>
+        <div class="form-field"><label>End date</label><input class="form-control" type="date" name="EndDate" value="@item.EndDate?.ToString("yyyy-MM-dd")" /></div>
+        <label class="form-check"><input type="checkbox" name="IsFeatured" value="true" checked="@item.IsFeatured" /><input type="hidden" name="IsFeatured" value="false" />Featured project</label>
+        <partial name="_OrderActiveFields" model="item" />
+    </div>
+    <partial name="_FormActions" />
+</form>

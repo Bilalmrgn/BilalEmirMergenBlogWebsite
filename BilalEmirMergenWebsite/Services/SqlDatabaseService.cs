@@ -15,15 +15,17 @@ namespace BilalEmirMergenWebsite.Services
     {
         private readonly AppDbContext _context;
         private readonly IMemoryCache _cache;
+        private readonly IPasswordService _passwords;
         private const string ArticlesCacheKey = "Articles_List";
         private const string ProjectsCacheKey = "Projects_List";
         private const string SocialsCacheKey = "Socials_List";
         private const string ArticleCachePrefix = "Article_Slug_";
 
-        public SqlDatabaseService(AppDbContext context, IMemoryCache cache)
+        public SqlDatabaseService(AppDbContext context, IMemoryCache cache, IPasswordService passwords)
         {
             _context = context;
             _cache = cache;
+            _passwords = passwords;
         }
 
         public bool IsDemo => false;
@@ -33,10 +35,10 @@ namespace BilalEmirMergenWebsite.Services
         {
             try
             {
-                var hashedPassword = HashPassword(password);
-                var user = await _context.AdminUsers
-                    .FirstOrDefaultAsync(u => u.Email == email && u.PasswordHash == hashedPassword);
-                return user != null;
+                var users = await _context.AdminUsers
+                    .Where(u => (u.Email == email || u.Username == email) && u.Role == "Admin")
+                    .ToListAsync();
+                return users.Any(user => _passwords.Verify(password, user.PasswordHash));
             }
             catch (Exception ex)
             {
@@ -115,16 +117,29 @@ namespace BilalEmirMergenWebsite.Services
 
         public async Task<Article?> GetArticleBySlugAsync(string slug)
         {
-            try
+            var cacheKey = ArticleCachePrefix + slug;
+            if (!_cache.TryGetValue(cacheKey, out Article? article))
             {
-                return await _context.Articles
-                    .FirstOrDefaultAsync(a => a.Slug == slug);
+                try
+                {
+                    article = await _context.Articles
+                        .FirstOrDefaultAsync(a => a.Slug == slug);
+
+                    if (article != null)
+                    {
+                        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromHours(1))
+                            .SetAbsoluteExpiration(TimeSpan.FromDays(1));
+                        _cache.Set(cacheKey, article, cacheEntryOptions);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"GetArticleBySlugAsync Hatası: {ex}");
+                    return null;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"GetArticleBySlugAsync Hatası: {ex}");
-                return null;
-            }
+            return article;
         }
 
         public async Task IncrementArticleViewsAsync(string slug)
@@ -136,6 +151,11 @@ namespace BilalEmirMergenWebsite.Services
                 {
                     article.Views++;
                     await _context.SaveChangesAsync();
+
+                    if (_cache.TryGetValue(ArticleCachePrefix + slug, out Article? cached) && cached != null)
+                    {
+                        cached.Views = article.Views;
+                    }
                 }
             }
             catch (Exception ex) 
@@ -164,6 +184,10 @@ namespace BilalEmirMergenWebsite.Services
             var existing = await _context.Articles.FirstOrDefaultAsync(a => a.Id == id);
             if (existing != null)
             {
+                // Invalidate cache for the old slug and the new slug
+                _cache.Remove(ArticleCachePrefix + existing.Slug);
+                _cache.Remove(ArticleCachePrefix + article.Slug);
+
                 existing.Title = article.Title;
                 existing.Slug = article.Slug;
                 existing.Summary = article.Summary;
@@ -183,6 +207,7 @@ namespace BilalEmirMergenWebsite.Services
                 var article = await _context.Articles.FirstOrDefaultAsync(a => a.Id == id);
                 if (article != null)
                 {
+                    _cache.Remove(ArticleCachePrefix + article.Slug);
                     _context.Articles.Remove(article);
                     await _context.SaveChangesAsync();
                     _cache.Remove(ArticlesCacheKey);

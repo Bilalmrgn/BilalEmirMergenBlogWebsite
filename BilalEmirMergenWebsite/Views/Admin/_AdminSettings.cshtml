@@ -1,0 +1,36 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Identity & SEO</p><h2>Site settings</h2></div></div>
+<form class="admin-editor" method="post" action="/admin/settings/save" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="Id" value="main" />
+    <input type="hidden" name="ProfileImage" value="@Model.Settings.ProfileImage" />
+    <input type="hidden" name="CvEnglishFile" value="@Model.Settings.CvEnglishFile" />
+    <input type="hidden" name="CvTurkishFile" value="@Model.Settings.CvTurkishFile" />
+    <div class="admin-section-label"><span>Profile</span></div>
+    <div class="form-grid">
+        <div class="form-field"><label>Brand name</label><input class="form-control" name="BrandName" value="@Model.Settings.BrandName" required /></div>
+        <div class="form-field"><label>Full name</label><input class="form-control" name="FullName" value="@Model.Settings.FullName" required /></div>
+        <div class="form-field"><label>Professional title</label><input class="form-control" name="TitleEn" value="@Model.Settings.TitleEn" required /></div>
+        <div class="form-field"><label>Location</label><input class="form-control" name="LocationEn" value="@Model.Settings.LocationEn" /></div>
+        <div class="form-field full"><label>Hero headline</label><input class="form-control" name="HeadlineEn" value="@Model.Settings.HeadlineEn" required /></div>
+        <div class="form-field full"><label>Hero introduction</label><textarea class="form-control" name="IntroEn">@Model.Settings.IntroEn</textarea></div>
+        <div class="form-field"><label>Email address</label><input class="form-control" type="email" name="Email" value="@Model.Settings.Email" /></div>
+        <div class="form-field"><label>Profile image</label><input class="form-control" type="file" name="profileImage" accept=".png,.jpg,.jpeg,.webp" data-image-input /><small>PNG, JPG or WebP, up to 8 MB.</small></div>
+        <div class="form-field"><label>English CV</label><input class="form-control" type="file" name="cvEnglish" accept=".pdf" /><small>PDF, up to 12 MB.</small></div>
+        <label class="form-check"><input type="checkbox" name="IsAvailable" value="true" checked="@Model.Settings.IsAvailable" /><input type="hidden" name="IsAvailable" value="false" />Available for opportunities</label>
+        <div class="form-field full"><label>Availability label</label><input class="form-control" name="AvailabilityEn" value="@Model.Settings.AvailabilityEn" /></div>
+    </div>
+    <div class="admin-section-label"><span>Contact</span></div>
+    <div class="form-grid">
+        <div class="form-field full"><label>Contact heading</label><input class="form-control" name="ContactTitleEn" value="@Model.Settings.ContactTitleEn" /></div>
+        <div class="form-field full"><label>Contact copy</label><textarea class="form-control" name="ContactTextEn">@Model.Settings.ContactTextEn</textarea></div>
+    </div>
+    <div class="admin-section-label"><span>Search & sharing</span></div>
+    <div class="form-grid">
+        <div class="form-field"><label>SEO title</label><input class="form-control" name="SeoTitleEn" value="@Model.Settings.SeoTitleEn" maxlength="70" /></div>
+        <div class="form-field"><label>Canonical base URL</label><input class="form-control" type="url" name="CanonicalBaseUrl" value="@Model.Settings.CanonicalBaseUrl" /></div>
+        <div class="form-field full"><label>Meta description</label><textarea class="form-control" name="SeoDescriptionEn" maxlength="170">@Model.Settings.SeoDescriptionEn</textarea></div>
+        <div class="form-field full"><label>Open Graph image path</label><input class="form-control" name="OpenGraphImage" value="@Model.Settings.OpenGraphImage" /></div>
+    </div>
+    <partial name="_FormActions" />
+</form>

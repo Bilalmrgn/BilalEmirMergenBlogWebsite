@@ -1,0 +1,25 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@{ var item = Model.Experiences.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Experience { StartDate = DateTime.Today, TimelineColor = "#2F9CF4" }; }
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Career timeline</p><h2>Work experience</h2></div><a class="btn" href="/en#experience" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
+<partial name="_OrderedTable" model='new BilalEmirMergenWebsite.Controllers.OrderedTableViewModel("experience", Model.Experiences.Select(value => (value.Id, value.RoleEn, value.CompanyName, value.SortOrder, value.IsActive)))' />
+<form class="admin-editor admin-form open" method="post" action="/admin/experience/save" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="CompanyLogoUrl" value="@item.CompanyLogoUrl" />
+    <input type="hidden" name="RoleTr" value="@item.RoleTr" /><input type="hidden" name="RoleAr" value="@item.RoleAr" /><input type="hidden" name="LocationTr" value="@item.LocationTr" /><input type="hidden" name="LocationAr" value="@item.LocationAr" /><input type="hidden" name="DescriptionTr" value="@item.DescriptionTr" /><input type="hidden" name="DescriptionAr" value="@item.DescriptionAr" /><input type="hidden" name="BulletPointsTr" value="@item.BulletPointsTr" /><input type="hidden" name="BulletPointsAr" value="@item.BulletPointsAr" />
+    <div class="form-grid">
+        <div class="form-field"><label>Job title</label><input class="form-control" name="RoleEn" value="@item.RoleEn" required /></div>
+        <div class="form-field"><label>Company</label><input class="form-control" name="CompanyName" value="@item.CompanyName" required /></div>
+        <div class="form-field"><label>Company website</label><input class="form-control" type="url" name="CompanyUrl" value="@item.CompanyUrl" /></div>
+        <div class="form-field"><label>Location</label><input class="form-control" name="LocationEn" value="@item.LocationEn" /></div>
+        <div class="form-field"><label>Start date</label><input class="form-control" type="date" name="StartDate" value="@item.StartDate.ToString("yyyy-MM-dd")" required /></div>
+        <div class="form-field"><label>End date</label><input class="form-control" type="date" name="EndDate" value="@item.EndDate?.ToString("yyyy-MM-dd")" /></div>
+        <label class="form-check"><input type="checkbox" name="IsCurrent" value="true" checked="@item.IsCurrent" data-current-toggle /><input type="hidden" name="IsCurrent" value="false" />Current position</label>
+        <div class="form-field"><label>Timeline accent</label><input class="form-control color-input" type="color" name="TimelineColor" value="@(string.IsNullOrWhiteSpace(item.TimelineColor) ? "#2F9CF4" : item.TimelineColor)" /></div>
+        <div class="form-field full"><label>Short description</label><textarea class="form-control" name="DescriptionEn">@item.DescriptionEn</textarea></div>
+        <div class="form-field full"><label>Highlights <small>one per line</small></label><textarea class="form-control" name="BulletPointsEn" rows="6">@item.BulletPointsEn</textarea></div>
+        <div class="form-field full"><label>Technologies <small>comma separated</small></label><input class="form-control" name="Technologies" value="@item.Technologies" /></div>
+        <div class="form-field"><label>Company logo</label><input class="form-control" type="file" name="logoFile" accept=".png,.jpg,.jpeg,.webp" data-image-input /></div>
+        <div class="form-field"><label>Timeline icon</label><input class="form-control" name="Icon" value="@item.Icon" placeholder="briefcase-business" /></div>
+        <partial name="_OrderActiveFields" model="item" />
+    </div>
+    <partial name="_FormActions" />
+</form>

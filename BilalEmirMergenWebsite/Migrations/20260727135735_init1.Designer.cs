@@ -42,13 +42,6 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.ToTable("AdminUsers");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = "1a8f906f-683a-4467-b5b6-7f414436573c",
-                            Email = "admin@bilal.com",
-                            PasswordHash = "JAvlGPq9JyTdtvBO6x2llnRI1+gxwIyPqCKAn3THIKk="
-                        });
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Analytics", b =>

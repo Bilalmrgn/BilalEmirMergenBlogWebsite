@@ -1,0 +1,151 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@using BilalEmirMergenWebsite.Controllers
+@using BilalEmirMergenWebsite.Models
+@{
+    var editingCategory = Model.Editor == "category" ? Model.Categories.FirstOrDefault(item => item.Id == Model.EditId) : null;
+    var category = editingCategory ?? new SkillCategory { AccentColor = "#2F9CF4", Icon = "layers-3", IsActive = true };
+    var editingSkill = Model.Editor == "technology" ? Model.Skills.FirstOrDefault(item => item.Id == Model.EditId) : null;
+    var skill = editingSkill ?? new Skill { CategoryId = Model.Categories.FirstOrDefault()?.Id ?? string.Empty, Icon = "dotnet", IconType = "simple-icons", BrandColor = "#512BD4", IsActive = true };
+    var technologyIcon = skill.Icon.Replace("simple-icons:", string.Empty, StringComparison.OrdinalIgnoreCase);
+    var drawerOpen = Model.Editor is "category" or "technology";
+    var categoryIcons = new[] { "code-2", "server", "database", "container", "wrench", "blocks", "cloud", "workflow" };
+    var colorPresets = new[] { "#2F9CF4", "#8B5CF6", "#14B8A6", "#F59E0B", "#F17863", "#EF4444" };
+}
+
+<header class="cms-page-header">
+    <div>
+        <p class="cms-eyebrow">Technical toolkit</p>
+        <h1>Skills</h1>
+        <p>Organize the technologies shown on your portfolio. Drag cards to change their public order.</p>
+    </div>
+    <div class="cms-page-actions">
+        <a class="cms-button secondary" href="/en#skills" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview portfolio</a>
+        <a class="cms-button secondary" href="?tab=skills&editor=category"><i data-lucide="folder-plus"></i>Add category</a>
+        <a class="cms-button primary" href="?tab=skills&editor=technology"><i data-lucide="plus"></i>Add technology</a>
+    </div>
+</header>
+
+<div class="skills-admin-summary" aria-label="Skills summary">
+    <div><span>@Model.Categories.Count</span><p>Categories</p></div>
+    <div><span>@Model.Skills.Count</span><p>Technologies</p></div>
+    <div><span>@Model.Skills.Count(item => item.IsActive)</span><p>Published</p></div>
+</div>
+
+@if (Model.Categories.Count == 0)
+{
+    <section class="cms-empty-state">
+        <span><i data-lucide="blocks"></i></span>
+        <h2>No skill categories yet</h2>
+        <p>Create a category such as Frontend or Backend, then add technologies to it.</p>
+        <a class="cms-button primary" href="?tab=skills&editor=category"><i data-lucide="plus"></i>Add your first category</a>
+    </section>
+}
+else
+{
+    <div class="skill-category-list" data-reorder-list data-type="category">
+        @foreach (var item in Model.Categories)
+        {
+            var categorySkills = Model.Skills.Where(value => value.CategoryId == item.Id).OrderBy(value => value.SortOrder).ToList();
+            <article class="skill-category-admin-card" draggable="true" data-id="@item.Id" style="--category-accent:@item.AccentColor">
+                <header>
+                    <button class="card-drag-handle" type="button" aria-label="Move @item.NameEn category"><i data-lucide="grip-vertical"></i></button>
+                    <span class="category-admin-icon"><i data-lucide="@item.Icon"></i></span>
+                    <div class="category-admin-title">
+                        <h2>@item.NameEn</h2>
+                        <p>@categorySkills.Count @(categorySkills.Count == 1 ? "technology" : "technologies")@if (!string.IsNullOrWhiteSpace(item.DescriptionEn)) { <span> · @item.DescriptionEn</span> }</p>
+                    </div>
+                    <span class="cms-status @(item.IsActive ? "published" : "draft")"><i data-lucide="@(item.IsActive ? "circle-check" : "eye-off")"></i>@(item.IsActive ? "Published" : "Hidden")</span>
+                    <a class="icon-button" href="?tab=skills&editor=category&editId=@item.Id" aria-label="Edit @item.NameEn"><i data-lucide="pencil"></i></a>
+                </header>
+
+                @if (categorySkills.Count == 0)
+                {
+                    <div class="category-empty-inline">
+                        <p>No technologies in this category yet.</p>
+                        <a href="?tab=skills&editor=technology">Add technology</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="admin-technology-grid" data-reorder-list data-type="skill">
+                        @foreach (var technology in categorySkills)
+                        {
+                            <article class="admin-technology-card" draggable="true" data-id="@technology.Id">
+                                <button class="card-drag-handle" type="button" aria-label="Move @technology.Name"><i data-lucide="grip-vertical"></i></button>
+                                <partial name="_TechnologyIcon" model='new TechnologyIconViewModel(technology.Name, technology.Icon, technology.IconType, technology.IconUrl, technology.BrandColor, 42)' />
+                                <div><h3>@technology.Name</h3><p>@technology.DescriptionEn.Or("No description")</p></div>
+                                <span class="visibility-dot @(technology.IsActive ? "published" : "draft")" title="@(technology.IsActive ? "Published" : "Hidden")"></span>
+                                <a class="icon-button" href="?tab=skills&editor=technology&editId=@technology.Id" aria-label="Edit @technology.Name"><i data-lucide="pencil"></i></a>
+                                <button class="icon-button danger" type="button" data-confirm-delete data-delete-name="@technology.Name" data-delete-message="This technology will be removed from the public portfolio." data-delete-form="delete-skill-@technology.Id" aria-label="Delete @technology.Name"><i data-lucide="trash-2"></i></button>
+                                <form id="delete-skill-@technology.Id" method="post" action="/admin/delete/skill/@technology.Id" hidden>@Html.AntiForgeryToken()</form>
+                            </article>
+                        }
+                    </div>
+                }
+
+                <footer>
+                    <div class="technology-name-cloud">@string.Join(" · ", categorySkills.Take(8).Select(value => value.Name))</div>
+                    <button class="text-danger-button" type="button" data-confirm-delete data-delete-name="@item.NameEn" data-delete-message="The category can only be deleted when it contains no technologies." data-delete-form="delete-category-@item.Id"><i data-lucide="trash-2"></i>Delete category</button>
+                    <form id="delete-category-@item.Id" method="post" action="/admin/delete/category/@item.Id" hidden>@Html.AntiForgeryToken()</form>
+                </footer>
+            </article>
+        }
+    </div>
+}
+
+@if (drawerOpen)
+{
+    <a class="cms-drawer-backdrop" href="?tab=skills" aria-label="Close editor"></a>
+    <aside class="cms-drawer open" data-admin-drawer aria-labelledby="drawer-title">
+        <header>
+            <div><p class="cms-eyebrow">@(Model.Editor == "category" ? "Skill category" : "Technology")</p><h2 id="drawer-title">@(Model.Editor == "category" ? (editingCategory is null ? "Add category" : "Edit category") : (editingSkill is null ? "Add technology" : "Edit technology"))</h2></div>
+            <a class="icon-button" href="?tab=skills" aria-label="Close editor"><i data-lucide="x"></i></a>
+        </header>
+
+        @if (Model.Editor == "category")
+        {
+            <form class="drawer-form" method="post" action="/admin/category/save" data-preserve-form="skill-category">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@(editingCategory?.Id ?? string.Empty)" />
+                <input type="hidden" name="SortOrder" value="@category.SortOrder" />
+                <div class="form-field"><label for="category-name">Category name</label><input id="category-name" class="form-control" name="NameEn" value="@category.NameEn" placeholder="e.g. Additional Technologies" required autofocus /></div>
+                <div class="form-field"><label for="category-description">Description <small>Optional</small></label><textarea id="category-description" class="form-control compact" name="DescriptionEn" placeholder="Caching, messaging, and background processing technologies.">@category.DescriptionEn</textarea></div>
+                <fieldset class="visual-choice-field"><legend>Category icon</legend><input type="hidden" name="Icon" value="@category.Icon" data-category-icon-value /><div class="category-icon-options">@foreach (var icon in categoryIcons) { <button type="button" class="@(category.Icon == icon ? "selected" : "")" data-category-icon="@icon" aria-label="Choose @icon icon"><i data-lucide="@icon"></i></button> }</div></fieldset>
+                <fieldset class="visual-choice-field"><legend>Accent color</legend><input type="hidden" name="AccentColor" value="@category.AccentColor" data-color-value /><div class="color-preset-options">@foreach (var color in colorPresets) { <button type="button" class="@(category.AccentColor.Equals(color, StringComparison.OrdinalIgnoreCase) ? "selected" : "")" style="--preset-color:@color" data-color-preset="@color" aria-label="Choose @color"></button> }</div></fieldset>
+                <label class="cms-switch"><input type="checkbox" name="IsActive" value="true" checked="@category.IsActive" /><span></span><input type="hidden" name="IsActive" value="false" /><strong>Published</strong><small>Show this category on the public portfolio.</small></label>
+                <footer><a class="cms-button secondary" href="?tab=skills">Cancel</a><button class="cms-button primary" type="submit"><i data-lucide="check"></i>Save category</button></footer>
+            </form>
+        }
+        else
+        {
+            <form class="drawer-form technology-editor-form" method="post" action="/admin/skill/save" data-preserve-form="technology">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@(editingSkill?.Id ?? string.Empty)" />
+                <input type="hidden" name="SortOrder" value="@skill.SortOrder" />
+                <input type="hidden" name="IconType" value="simple-icons" />
+                <input type="hidden" name="IconUrl" value="@skill.IconUrl" />
+                <div class="form-field"><label for="technology-name">Technology name</label><input id="technology-name" class="form-control" name="Name" value="@skill.Name" placeholder="e.g. RabbitMQ" required autofocus data-technology-name /></div>
+                <div class="icon-suggestion" data-icon-suggestion hidden><span data-suggestion-icon></span><div><small>Suggested icon</small><strong data-suggestion-name></strong></div><button type="button" data-use-suggestion>Use this icon</button></div>
+                <div class="form-field"><label for="technology-category">Category</label><select id="technology-category" class="form-control" name="CategoryId" required><option value="">Choose a category</option>@foreach (var item in Model.Categories) { if (skill.CategoryId == item.Id) { <option value="@item.Id" selected>@item.NameEn</option> } else { <option value="@item.Id">@item.NameEn</option> } }</select></div>
+                <div class="form-field"><label>Icon</label><input type="hidden" name="Icon" value="@technologyIcon" data-icon-slug /><input type="hidden" name="BrandColor" value="@skill.BrandColor" data-icon-color /><button class="icon-picker-trigger" type="button" data-open-icon-picker><span data-selected-icon><partial name="_TechnologyIcon" model='new TechnologyIconViewModel(skill.Name.Or("Technology"), technologyIcon, "simple-icons", skill.IconUrl, skill.BrandColor, 42)' /></span><span><strong data-selected-icon-name>@(TechnologyIconCatalog.All.FirstOrDefault(item => item.Slug == technologyIcon)?.Name ?? "Choose icon")</strong><small>Search the technology logo library</small></span><i data-lucide="chevron-down"></i></button></div>
+                <div class="form-field"><label for="technology-description">Short description</label><input id="technology-description" class="form-control" name="DescriptionEn" value="@skill.DescriptionEn" placeholder="e.g. Message Queue" data-technology-description /></div>
+                <label class="cms-switch"><input type="checkbox" name="IsActive" value="true" checked="@skill.IsActive" /><span></span><input type="hidden" name="IsActive" value="false" /><strong>Published</strong><small>Show this technology on the public portfolio.</small></label>
+                <section class="technology-live-preview" aria-labelledby="preview-title"><small id="preview-title">Live preview</small><div class="public-skill-card preview-card"><span data-preview-icon><partial name="_TechnologyIcon" model='new TechnologyIconViewModel(skill.Name.Or("Technology"), technologyIcon, "simple-icons", skill.IconUrl, skill.BrandColor, 56)' /></span><h3 data-preview-name>@skill.Name.Or("Technology name")</h3><p data-preview-description>@skill.DescriptionEn.Or("Short description")</p></div></section>
+                <footer><a class="cms-button secondary" href="?tab=skills">Cancel</a><button class="cms-button primary" type="submit"><i data-lucide="check"></i>Save technology</button></footer>
+            </form>
+
+            <dialog class="technology-icon-dialog" data-icon-picker aria-labelledby="icon-picker-title">
+                <header><div><p class="cms-eyebrow">Technology logos</p><h2 id="icon-picker-title">Choose an icon</h2></div><button class="icon-button" type="button" data-close-icon-picker aria-label="Close icon picker"><i data-lucide="x"></i></button></header>
+                <div class="icon-picker-search"><i data-lucide="search"></i><input type="search" placeholder="Search technologies..." data-icon-search autocomplete="off" /></div>
+                <div class="icon-filter-row" role="group" aria-label="Filter icons"><button class="selected" type="button" data-icon-filter="all">All</button>@foreach (var group in TechnologyIconCatalog.All.Select(item => item.Group).Distinct()) { <button type="button" data-icon-filter="@group.ToLowerInvariant()">@group</button> }</div>
+                <div class="technology-icon-options" data-icon-options>
+                    @foreach (var option in TechnologyIconCatalog.All)
+                    {
+                        <button type="button" data-icon-option data-slug="@option.Slug" data-name="@option.Name" data-color="@option.BrandColor" data-group="@option.Group.ToLowerInvariant()" data-search="@option.SearchText" class="@(technologyIcon == option.Slug ? "selected" : "")"><partial name="_TechnologyIcon" model='new TechnologyIconViewModel(option.Name, option.Slug, "simple-icons", string.Empty, option.BrandColor, 40)' /><span>@option.Name</span><i data-lucide="check"></i></button>
+                    }
+                </div>
+                <p class="icon-picker-empty" data-icon-picker-empty hidden>No icons match that search.</p>
+            </dialog>
+        }
+    </aside>
+}

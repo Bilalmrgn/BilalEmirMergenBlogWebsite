@@ -1,0 +1,26 @@
+@model BilalEmirMergenWebsite.Controllers.OrderedTableViewModel
+@{
+    var rows = Model.Rows.ToList();
+    var currentTab = Context.Request.Query["tab"].ToString();
+}
+@if (rows.Count > 0)
+{
+    <div class="cms-content-list" data-reorder-list data-type="@Model.Type">
+        @foreach (var row in rows)
+        {
+            <article draggable="true" data-id="@row.Id">
+                <button class="card-drag-handle" type="button" aria-label="Move @row.Title"><i data-lucide="grip-vertical"></i></button>
+                <div class="cms-list-copy"><strong>@row.Title</strong><small>@row.Meta</small></div>
+                <span class="cms-status @(row.Active ? "published" : "draft")">@(row.Active ? "Published" : "Hidden")</span>
+                <a class="icon-button" href="?tab=@currentTab&editId=@row.Id" aria-label="Edit @row.Title"><i data-lucide="pencil"></i></a>
+                <button class="icon-button danger" type="button" data-confirm-delete data-delete-name="@row.Title" data-delete-message="This item will be removed from the public portfolio." data-delete-form="delete-@Model.Type-@row.Id" aria-label="Delete @row.Title"><i data-lucide="trash-2"></i></button>
+                <form id="delete-@Model.Type-@row.Id" method="post" action="/admin/delete/@Model.Type/@row.Id" hidden>@Html.AntiForgeryToken()</form>
+            </article>
+        }
+        <p class="reorder-help"><i data-lucide="move"></i>Drag cards or use the handle with arrow keys to change their public order.</p>
+    </div>
+}
+else
+{
+    <div class="admin-empty"><i data-lucide="inbox"></i><div><strong>No content yet</strong><p>Add the first item using the simple form below.</p></div></div>
+}

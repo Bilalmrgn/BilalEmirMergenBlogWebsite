@@ -1,0 +1,33 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@{
+    var greeting = DateTime.Now.Hour < 12 ? "Good morning" : DateTime.Now.Hour < 18 ? "Good afternoon" : "Good evening";
+}
+<header class="cms-page-header dashboard-header">
+    <div><p class="cms-eyebrow">Dashboard</p><h1>@greeting</h1><p>Manage your portfolio content from one clear workspace.</p></div>
+    <a class="cms-button secondary" href="/en" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview portfolio</a>
+</header>
+
+<div class="dashboard-summary-grid">
+    <a href="?tab=about"><span class="summary-icon blue"><i data-lucide="user-round"></i></span><div><small>About</small><strong>Profile</strong><p>Ready to edit</p></div><i data-lucide="chevron-right"></i></a>
+    <a href="?tab=experience"><span class="summary-icon purple"><i data-lucide="briefcase-business"></i></span><div><small>Experience</small><strong>@Model.Experiences.Count entries</strong><p>Career timeline</p></div><i data-lucide="chevron-right"></i></a>
+    <a href="?tab=skills"><span class="summary-icon teal"><i data-lucide="blocks"></i></span><div><small>Skills</small><strong>@Model.Skills.Count technologies</strong><p>Technical toolkit</p></div><i data-lucide="chevron-right"></i></a>
+    <a href="?tab=projects"><span class="summary-icon orange"><i data-lucide="folder-kanban"></i></span><div><small>Projects</small><strong>@Model.Projects.Count entries</strong><p>@Model.Projects.Count(item => item.IsActive) published</p></div><i data-lucide="chevron-right"></i></a>
+    <a href="?tab=articles"><span class="summary-icon coral"><i data-lucide="newspaper"></i></span><div><small>Blog</small><strong>@Model.Articles.Count posts</strong><p>@Model.Articles.Count(item => !item.IsActive) drafts</p></div><i data-lucide="chevron-right"></i></a>
+</div>
+
+<div class="dashboard-columns">
+    <section class="dashboard-card">
+        <header><div><p class="cms-eyebrow">Create content</p><h2>Quick actions</h2></div></header>
+        <div class="quick-action-grid">
+            <a href="?tab=experience"><i data-lucide="briefcase-business"></i><span><strong>Add experience</strong><small>Extend your work timeline</small></span><i data-lucide="plus"></i></a>
+            <a href="?tab=skills&editor=technology"><i data-lucide="blocks"></i><span><strong>Add technology</strong><small>Update your technical toolkit</small></span><i data-lucide="plus"></i></a>
+            <a href="?tab=projects"><i data-lucide="folder-kanban"></i><span><strong>Add project</strong><small>Publish a new case study</small></span><i data-lucide="plus"></i></a>
+            <a href="?tab=articles"><i data-lucide="pen-line"></i><span><strong>Write blog post</strong><small>Share an engineering idea</small></span><i data-lucide="plus"></i></a>
+        </div>
+    </section>
+    <section class="dashboard-card portfolio-health-card">
+        <header><div><p class="cms-eyebrow">Portfolio health</p><h2>At a glance</h2></div></header>
+        <dl><div><dt>Published projects</dt><dd>@Model.Projects.Count(item => item.IsActive)</dd></div><div><dt>Published posts</dt><dd>@Model.Articles.Count(item => item.IsActive)</dd></div><div><dt>Technologies</dt><dd>@Model.Skills.Count</dd></div><div><dt>Visits recorded</dt><dd>@Model.SiteVisits</dd></div></dl>
+        <a href="/en" target="_blank" rel="noreferrer">Open public portfolio<i data-lucide="arrow-up-right"></i></a>
+    </section>
+</div>

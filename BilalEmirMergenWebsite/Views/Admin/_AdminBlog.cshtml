@@ -1,0 +1,24 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@using BilalEmirMergenWebsite.Controllers
+@{ var item = Model.Articles.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Article { ContentLanguage = "en", PublishedAt = DateTime.Now }; }
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Writing & ideas</p><h2>Blog</h2></div>@if (!string.IsNullOrWhiteSpace(item.Slug)) { <a class="btn" href="/en/blog/@item.Slug" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a> }</div>
+<partial name="_OrderedTable" model='new OrderedTableViewModel("article", Model.Articles.Select(value => (value.Id, value.TitleEn.Or(value.Title), value.IsActive ? "Published" : "Draft", value.SortOrder, value.IsActive)))' />
+<form class="admin-editor admin-form open" method="post" action="/admin/article/save" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="Title" value="@item.Title" /><input type="hidden" name="Summary" value="@item.Summary" /><input type="hidden" name="Content" value="@item.Content" /><input type="hidden" name="CoverImage" value="@item.CoverImage" /><input type="hidden" name="ContentLanguage" value="en" /><input type="hidden" name="IsInternal" value="true" />
+    <input type="hidden" name="TitleTr" value="@item.TitleTr" /><input type="hidden" name="TitleAr" value="@item.TitleAr" /><input type="hidden" name="CategoryTr" value="@item.CategoryTr" /><input type="hidden" name="CategoryAr" value="@item.CategoryAr" /><input type="hidden" name="SummaryTr" value="@item.SummaryTr" /><input type="hidden" name="SummaryAr" value="@item.SummaryAr" /><input type="hidden" name="ContentTr" value="@item.ContentTr" /><input type="hidden" name="ContentAr" value="@item.ContentAr" />
+    <div class="form-grid">
+        <div class="form-field"><label>Post title</label><input class="form-control" name="TitleEn" value="@item.TitleEn" required /></div>
+        <div class="form-field"><label>Category</label><input class="form-control" name="CategoryEn" value="@item.CategoryEn" /></div>
+        <div class="form-field full"><label>Slug</label><input class="form-control" name="Slug" value="@item.Slug" /></div>
+        <div class="form-field full"><label>Summary</label><textarea class="form-control" name="SummaryEn" maxlength="600">@item.SummaryEn</textarea></div>
+        <partial name="_RichTextEditor" model='new RichTextEditorViewModel("ContentEn", item.ContentEn, "Article content", "Format text, colors, headings, links, and lists without writing HTML.", "440px")' />
+        <div class="form-field"><label>Cover image</label><input class="form-control" type="file" name="coverFile" accept=".png,.jpg,.jpeg,.webp" data-image-input /></div>
+        <div class="form-field"><label>Publication date</label><input class="form-control" type="datetime-local" name="PublishedAt" value="@item.PublishedAt?.ToString("yyyy-MM-ddTHH:mm")" /></div>
+        <div class="form-field full"><label>Tags <small>comma separated</small></label><input class="form-control" name="Tags" value="@item.Tags" /></div>
+        <div class="form-field"><label>SEO title</label><input class="form-control" name="SeoTitle" value="@item.SeoTitle" maxlength="70" /></div>
+        <div class="form-field"><label>SEO description</label><input class="form-control" name="SeoDescription" value="@item.SeoDescription" maxlength="170" /></div>
+        <label class="form-check"><input type="checkbox" name="IsFeatured" value="true" checked="@item.IsFeatured" /><input type="hidden" name="IsFeatured" value="false" />Featured post</label>
+        <partial name="_OrderActiveFields" model="item" />
+    </div>
+    <partial name="_FormActions" />
+</form>

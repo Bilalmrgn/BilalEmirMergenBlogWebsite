@@ -1,0 +1,40 @@
+@model BilalEmirMergenWebsite.Controllers.DashboardViewModel
+@using BilalEmirMergenWebsite.Models
+@{
+    var item = Model.Socials.FirstOrDefault(value => value.Id == Model.EditId) ?? new Social();
+    var socialIcon = string.IsNullOrWhiteSpace(item.Icon) ? "link" : item.Icon;
+    var selectedIconName = SocialIconCatalog.All.FirstOrDefault(option => option.Icon == socialIcon)?.Name ?? "Choose icon";
+}
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Contact channels</p><h2>Social links</h2></div><a class="btn" href="/en#contact" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
+<partial name="_OrderedTable" model='new BilalEmirMergenWebsite.Controllers.OrderedTableViewModel("social", Model.Socials.Select(value => (value.Id, value.Name, value.Url, value.SortOrder, value.IsActive)))' />
+<form class="admin-editor admin-form open social-editor-form" method="post" action="/admin/social/save">
+    @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" />
+    <div class="form-grid">
+        <div class="form-field"><label>Platform</label><input class="form-control" name="Name" value="@item.Name" required /></div>
+        <div class="form-field social-icon-field">
+            <label>Icon</label>
+            <input type="hidden" name="Icon" value="@socialIcon" data-social-icon-value />
+            <button class="icon-picker-trigger" type="button" data-open-social-icon-picker>
+                <span class="social-selected-icon" data-selected-social-icon><i data-lucide="@socialIcon"></i></span>
+                <span><strong data-selected-social-icon-name>@selectedIconName</strong><small>Choose from the visual icon library</small></span>
+                <i data-lucide="chevron-down"></i>
+            </button>
+        </div>
+        <div class="form-field full"><label>URL</label><input class="form-control" type="text" inputmode="url" name="Url" value="@item.Url" placeholder="https://... or mailto:..." required /></div>
+        <div class="form-field"><label>Display order</label><input class="form-control" type="number" name="SortOrder" value="@item.SortOrder" /></div>
+        <label class="form-check"><input type="checkbox" name="IsActive" value="true" checked="@item.IsActive" /><input type="hidden" name="IsActive" value="false" />Published</label>
+    </div>
+    <partial name="_FormActions" />
+</form>
+
+<dialog class="technology-icon-dialog social-icon-dialog" data-social-icon-picker aria-labelledby="social-icon-picker-title">
+    <header><div><p class="cms-eyebrow">Social links</p><h2 id="social-icon-picker-title">Choose an icon</h2></div><button class="icon-button" type="button" data-close-social-icon-picker aria-label="Close icon picker"><i data-lucide="x"></i></button></header>
+    <div class="icon-picker-search"><i data-lucide="search"></i><input type="search" placeholder="Search platforms and icons..." data-social-icon-search autocomplete="off" /></div>
+    <div class="social-icon-options">
+        @foreach (var option in SocialIconCatalog.All)
+        {
+            <button type="button" data-social-icon-option data-icon="@option.Icon" data-name="@option.Name" data-search="@option.SearchText" class="@(socialIcon == option.Icon ? "selected" : "")"><span><i data-lucide="@option.Icon"></i></span><strong>@option.Name</strong><i data-lucide="check"></i></button>
+        }
+    </div>
+    <p class="icon-picker-empty" data-social-icon-empty hidden>No icons match that search.</p>
+</dialog>

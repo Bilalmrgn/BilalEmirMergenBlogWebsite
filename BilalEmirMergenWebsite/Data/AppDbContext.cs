@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using BilalEmirMergenWebsite.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace BilalEmirMergenWebsite.Data
 {
@@ -19,6 +18,17 @@ namespace BilalEmirMergenWebsite.Data
         public DbSet<Social> Socials { get; set; } = null!;
         public DbSet<Analytics> Analytics { get; set; } = null!;
         public DbSet<AdminUser> AdminUsers { get; set; } = null!;
+        public DbSet<Experience> Experiences { get; set; } = null!;
+        public DbSet<Education> Educations { get; set; } = null!;
+        public DbSet<SkillCategory> SkillCategories { get; set; } = null!;
+        public DbSet<Skill> Skills { get; set; } = null!;
+        public DbSet<EngineeringConcept> EngineeringConcepts { get; set; } = null!;
+        public DbSet<SpokenLanguage> SpokenLanguages { get; set; } = null!;
+        public DbSet<SiteSettings> SiteSettings { get; set; } = null!;
+        public DbSet<AboutSection> AboutSections { get; set; } = null!;
+        public DbSet<AcademicFoundation> AcademicFoundations { get; set; } = null!;
+        public DbSet<Service> Services { get; set; } = null!;
+        public DbSet<Certificate> Certificates { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,25 +40,21 @@ namespace BilalEmirMergenWebsite.Data
                 .HasConversion(
                     v => v == null ? string.Empty : string.Join(',', v),
                     v => string.IsNullOrEmpty(v) ? new List<string>() : v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
-                );
+                )
+                .Metadata.SetValueComparer(new ValueComparer<List<string>>(
+                    (left, right) => left != null && right != null && left.SequenceEqual(right),
+                    value => value.Aggregate(0, (hash, item) => HashCode.Combine(hash, item.GetHashCode())),
+                    value => value.ToList()));
 
-            // Seed default admin user: admin@bilal.com / Bilal.123
-            string defaultPasswordHash = HashPassword("Bilal.123");
-            modelBuilder.Entity<AdminUser>().HasData(new AdminUser
-            {
-                Id = "1a8f906f-683a-4467-b5b6-7f414436573c",
-                Email = "admin@bilal.com",
-                PasswordHash = defaultPasswordHash
-            });
-        }
+            modelBuilder.Entity<Project>().HasIndex(p => p.Slug);
+            modelBuilder.Entity<Article>().HasIndex(a => a.Slug);
+            modelBuilder.Entity<Skill>().Property(skill => skill.YearsOfExperience).HasPrecision(4, 1);
+            modelBuilder.Entity<Skill>()
+                .HasOne(s => s.Category)
+                .WithMany(c => c.Skills)
+                .HasForeignKey(s => s.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        private static string HashPassword(string password)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(hashedBytes);
-            }
         }
     }
 }

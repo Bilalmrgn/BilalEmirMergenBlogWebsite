@@ -1,0 +1,23 @@
+@model BilalEmirMergenWebsite.Controllers.TechnologyIconViewModel
+@{
+    var provider = Model.IconProvider?.ToLowerInvariant() ?? "simple-icons";
+    var slug = (Model.Icon ?? string.Empty).Replace("simple-icons:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+    var color = string.IsNullOrWhiteSpace(Model.BrandColor) ? "#2F9CF4" : Model.BrandColor;
+    var hex = color.TrimStart('#');
+    var initial = string.IsNullOrWhiteSpace(Model.Name) ? "?" : Model.Name.Trim()[0].ToString().ToUpperInvariant();
+}
+<span class="technology-icon" style="--technology-color:@color;--technology-size:@(Model.Size)px" aria-hidden="true">
+    @if (!string.IsNullOrWhiteSpace(Model.IconUrl))
+    {
+        <img src="@Model.IconUrl" alt="" data-tech-icon-image />
+    }
+    else if (provider == "simple-icons" && !string.IsNullOrWhiteSpace(slug))
+    {
+        <img src="https://cdn.simpleicons.org/@slug/@hex" alt="" data-tech-icon-image />
+    }
+    else
+    {
+        <i data-lucide="@(string.IsNullOrWhiteSpace(slug) ? "code-2" : slug)"></i>
+    }
+    <span class="technology-icon-fallback">@initial</span>
+</span>
