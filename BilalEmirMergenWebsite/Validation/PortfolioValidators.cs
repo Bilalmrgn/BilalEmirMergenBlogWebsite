@@ -72,3 +72,24 @@ public sealed class SocialValidator : AbstractValidator<Social>
         return value.StartsWith("/", StringComparison.Ordinal) && !value.StartsWith("//", StringComparison.Ordinal);
     }
 }
+
+public sealed class CertificateValidator : AbstractValidator<Certificate>
+{
+    public CertificateValidator()
+    {
+        RuleFor(model => model.NameEn).NotEmpty().MaximumLength(200);
+        RuleFor(model => model.Organization).NotEmpty().MaximumLength(200);
+        RuleFor(model => model.CredentialId).MaximumLength(200);
+        RuleFor(model => model.CredentialUrl)
+            .Must(BeWebUrlOrEmpty)
+            .WithMessage("Credential URL must be a valid http or https address.");
+        RuleFor(model => model.ExpirationDate)
+            .GreaterThanOrEqualTo(model => model.IssueDate)
+            .When(model => model.IssueDate.HasValue && model.ExpirationDate.HasValue && !model.DoesNotExpire)
+            .WithMessage("Expiration date cannot be earlier than the issue date.");
+    }
+
+    private static bool BeWebUrlOrEmpty(string value) =>
+        string.IsNullOrWhiteSpace(value) ||
+        Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https";
+}

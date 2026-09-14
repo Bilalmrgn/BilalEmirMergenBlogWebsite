@@ -81,6 +81,17 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle.addEventListener('change', sync); sync();
   });
 
+  document.querySelectorAll('[data-certificate-no-expiry]').forEach(toggle => {
+    const expiration = toggle.closest('form')?.querySelector('[data-certificate-expiration]');
+    const sync = () => {
+      if (!expiration) return;
+      expiration.disabled = toggle.checked;
+      if (toggle.checked) expiration.value = '';
+    };
+    toggle.addEventListener('change', sync);
+    sync();
+  });
+
   document.querySelectorAll('[data-preview-source]').forEach(source => {
     const preview = source.closest('form')?.querySelector('[data-content-preview]');
     if (!preview) return;

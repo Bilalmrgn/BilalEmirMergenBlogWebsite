@@ -1,0 +1,104 @@
+@model BilalEmirMergenWebsite.Controllers.BlogListViewModel
+@using BilalEmirMergenWebsite.Controllers
+@{
+    var isTr = Model.IsTr;
+    var culture = Model.Culture;
+}
+
+<div class="portfolio-content" style="padding-top: 40px; padding-bottom: 80px;">
+    <nav class="breadcrumb-nav" style="margin-bottom: 24px;" data-reveal>
+        <a class="back-link" href="/" style="display: inline-flex; align-items: center; gap: 8px; color: var(--copy); font-weight: 600; text-decoration: none;">
+            <i data-lucide="arrow-left"></i>
+            @(isTr ? "Ana Sayfaya Dön" : "Back to Home")
+        </a>
+    </nav>
+
+    <header class="full-list-hero" data-reveal>
+        <span class="full-list-badge"><i data-lucide="newspaper"></i> @(isTr ? "Blog" : "Blog")</span>
+        <h1 style="font: 700 38px/1.15 var(--serif); color: var(--ink); margin-top: 4px;">
+            @(isTr ? "Tüm Blog Yazılarım" : "All Blog Posts")
+        </h1>
+        <p style="color: var(--copy); max-width: 680px; margin-top: 10px; font-size: 15px; line-height: 1.6;">
+            @(isTr ? "Yazılım, mimari ve teknoloji üzerine yazılarım." : "Technical writing and articles.")
+        </p>
+    </header>
+
+    @if (Model.Articles.Any())
+    {
+        <div class="full-list-grid">
+            @foreach (var item in Model.Articles)
+            {
+                var title = isTr ? item.TitleTr.Or(item.Title).Or(item.TitleEn) : item.TitleEn.Or(item.Title);
+                var summary = isTr ? item.SummaryTr.Or(item.Summary).Or(item.SummaryEn) : item.SummaryEn.Or(item.Summary);
+                var category = isTr ? item.CategoryTr.Or(item.CategoryEn).Or("Mühendislik") : item.CategoryEn.Or("Engineering");
+                var url = item.IsInternal ? $"/blog/{item.Slug}" : item.ExternalUrl;
+                var contentHtml = isTr ? item.ContentTr.Or(item.Content) : item.ContentEn.Or(item.Content);
+                var formattedMeta = TextExtensions.FormatBlogMeta(item.PublishedAt ?? item.CreatedAt, contentHtml, culture);
+
+                <article class="blog-card" data-reveal>
+                    <a class="blog-image" href="@url">
+                        @if (!string.IsNullOrWhiteSpace(item.CoverImage))
+                        {
+                            <img src="@item.CoverImage" alt="@title" loading="lazy" data-image-fallback />
+                        }
+                        <span class="image-placeholder"><i data-lucide="file-text"></i><small>Bilal Emir Mergen</small></span>
+                    </a>
+                    <div style="padding: 16px;">
+                        <div class="blog-meta">
+                            <span>@category</span>
+                            <time>@formattedMeta</time>
+                        </div>
+                        <h3 style="font-size: 15px; margin: 10px 0 6px;"><a href="@url">@title</a></h3>
+                        <p style="font-size: 11px; line-height: 1.4;">@summary</p>
+                        <a class="read-more" href="@url" target="@(!item.IsInternal ? "_blank" : null)" style="margin-top: 10px;">
+                            @(isTr ? "Yazıyı oku" : "Read article")
+                            <i data-lucide="arrow-right"></i>
+                        </a>
+                    </div>
+                </article>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="pagination-nav" aria-label="Blog list pagination">
+                @if (Model.CurrentPage > 1)
+                {
+                    <a href="?page=@(Model.CurrentPage - 1)" aria-label="Previous page">&laquo; @(isTr ? "Önceki" : "Previous")</a>
+                }
+                else
+                {
+                    <span class="page-num disabled">&laquo; @(isTr ? "Önceki" : "Previous")</span>
+                }
+
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    if (p == Model.CurrentPage)
+                    {
+                        <span class="page-num active">@p</span>
+                    }
+                    else
+                    {
+                        <a href="?page=@p">@p</a>
+                    }
+                }
+
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a href="?page=@(Model.CurrentPage + 1)" aria-label="Next page">@(isTr ? "Sonraki" : "Next") &raquo;</a>
+                }
+                else
+                {
+                    <span class="page-num disabled">@(isTr ? "Sonraki" : "Next") &raquo;</span>
+                }
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="empty-state" style="text-align: center; padding: 60px 20px; background: var(--white); border: 1px solid var(--line); border-radius: 8px;">
+            <i data-lucide="newspaper" style="width: 48px; height: 48px; color: var(--copy); margin-bottom: 16px;"></i>
+            <h3>@(isTr ? "Henüz yayınlanmış blog yazısı bulunmuyor." : "No blog posts available yet.")</h3>
+        </div>
+    }
+</div>

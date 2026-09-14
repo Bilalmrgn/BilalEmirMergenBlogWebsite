@@ -1,10 +1,53 @@
 @model BilalEmirMergenWebsite.Controllers.DashboardViewModel
-@using BilalEmirMergenWebsite.Models
 @using BilalEmirMergenWebsite.Controllers
-@{ var item=Model.Certificates.FirstOrDefault(x=>x.Id==Model.EditId)??new Certificate(); }
-<partial name="_AdminListHeader" model='("Certificates","Add certificate")'/>
-<partial name="_OrderedTable" model='new OrderedTableViewModel("certificate",Model.Certificates.Select(x=>(x.Id,x.NameEn,x.Organization,x.SortOrder,x.IsActive)))'/>
-<form class="admin-form open localized-admin-form" method="post" action="/admin/certificate/save">
-@Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null?"":item.Id)"/>
-<div class="admin-locale-tabs"><button type="button" class="active" data-locale-tab="en">English</button><button type="button" data-locale-tab="tr">Türkçe</button><button type="button" data-locale-tab="ar">العربية</button></div>
-<div class="form-grid"><div class="locale-pane active" data-locale-pane="en"><div class="form-field"><label>Name</label><input class="form-control" name="NameEn" value="@item.NameEn"/></div><div class="form-field"><label>Description</label><textarea class="form-control" name="DescriptionEn">@item.DescriptionEn</textarea></div></div><div class="locale-pane" data-locale-pane="tr"><div class="form-field"><label>Ad</label><input class="form-control" name="NameTr" value="@item.NameTr"/></div><div class="form-field"><label>Açıklama</label><textarea class="form-control" name="DescriptionTr">@item.DescriptionTr</textarea></div></div><div class="locale-pane" data-locale-pane="ar" dir="rtl"><div class="form-field"><label>الاسم</label><input class="form-control" name="NameAr" value="@item.NameAr"/></div><div class="form-field"><label>الوصف</label><textarea class="form-control" name="DescriptionAr">@item.DescriptionAr</textarea></div></div><div class="form-field"><label>Organization</label><input class="form-control" name="Organization" value="@item.Organization"/></div><div class="form-field"><label>Issue date</label><input class="form-control" type="date" name="IssueDate" value="@item.IssueDate?.ToString("yyyy-MM-dd")"/></div><div class="form-field"><label>Expiration</label><input class="form-control" type="date" name="ExpirationDate" value="@item.ExpirationDate?.ToString("yyyy-MM-dd")"/></div><div class="form-field"><label>Credential ID</label><input class="form-control" name="CredentialId" value="@item.CredentialId"/></div><div class="form-field"><label>Credential URL</label><input class="form-control" type="url" name="CredentialUrl" value="@item.CredentialUrl"/></div><div class="form-field"><label>Certificate image URL</label><input class="form-control" name="CertificateImage" value="@item.CertificateImage"/></div><div class="form-field"><label>Organization logo URL</label><input class="form-control" name="OrganizationLogo" value="@item.OrganizationLogo"/></div><label class="form-check"><input type="checkbox" name="DoesNotExpire" value="true" checked="@item.DoesNotExpire"/><input type="hidden" name="DoesNotExpire" value="false"/> Does not expire</label><partial name="_OrderActiveFields" model="item"/></div><partial name="_FormActions"/></form>
+@{
+    var item = Model.Certificates.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Certificate { IssueDate = DateTime.Today };
+}
+
+<div class="admin-panel-header">
+    <div><p class="admin-eyebrow">Professional credentials</p><h2>Certificates</h2></div>
+    <a class="btn" href="/#certificates" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a>
+</div>
+
+<partial name="_OrderedTable" model='new OrderedTableViewModel("certificate", Model.Certificates.Select(value => (value.Id, value.NameEn.Or(value.NameTr), value.Organization, value.SortOrder, value.IsActive)))' />
+
+<form class="admin-editor admin-form open" method="post" action="/admin/certificate/save" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" />
+    <input type="hidden" name="CertificateImage" value="@item.CertificateImage" />
+    <input type="hidden" name="OrganizationLogo" value="@item.OrganizationLogo" />
+
+    <div class="form-grid">
+        <div class="form-field"><label>Certificate name</label><input class="form-control" name="NameEn" value="@item.NameEn" maxlength="200" required /></div>
+        <div class="form-field"><label>Issuing organization</label><input class="form-control" name="Organization" value="@item.Organization" maxlength="200" required /></div>
+        <div class="form-field"><label>Issue date</label><input class="form-control" type="date" name="IssueDate" value="@item.IssueDate?.ToString("yyyy-MM-dd")" /></div>
+        <div class="form-field"><label>Expiration date</label><input class="form-control" type="date" name="ExpirationDate" value="@item.ExpirationDate?.ToString("yyyy-MM-dd")" data-certificate-expiration /></div>
+        <label class="form-check"><input type="checkbox" name="DoesNotExpire" value="true" checked="@item.DoesNotExpire" data-certificate-no-expiry /><input type="hidden" name="DoesNotExpire" value="false" />This credential does not expire</label>
+        <div class="form-field"><label>Credential ID</label><input class="form-control" name="CredentialId" value="@item.CredentialId" maxlength="200" /></div>
+        <div class="form-field full"><label>Credential URL <small>public verification link</small></label><input class="form-control" type="url" name="CredentialUrl" value="@item.CredentialUrl" placeholder="https://..." /></div>
+        <div class="form-field full"><label>Description</label><textarea class="form-control" name="DescriptionEn" rows="4">@item.DescriptionEn</textarea></div>
+        <details class="form-field full certificate-translations">
+            <summary>Turkish and Arabic translations <small>optional</small></summary>
+            <div class="certificate-translation-grid">
+                <div class="form-field"><label>Turkish name</label><input class="form-control" name="NameTr" value="@item.NameTr" maxlength="200" /></div>
+                <div class="form-field"><label>Turkish description</label><textarea class="form-control" name="DescriptionTr" rows="3">@item.DescriptionTr</textarea></div>
+                <div class="form-field" dir="rtl"><label>الاسم بالعربية</label><input class="form-control" name="NameAr" value="@item.NameAr" maxlength="200" /></div>
+                <div class="form-field" dir="rtl"><label>الوصف بالعربية</label><textarea class="form-control" name="DescriptionAr" rows="3">@item.DescriptionAr</textarea></div>
+            </div>
+        </details>
+
+        <div class="form-field">
+            <label>Certificate image <small>PNG, JPG or WebP · max 8 MB</small></label>
+            <input class="form-control" type="file" name="certificateImageFile" accept=".png,.jpg,.jpeg,.webp" data-image-input />
+            @if (!string.IsNullOrWhiteSpace(item.CertificateImage)) { <a class="admin-upload-preview" href="@item.CertificateImage" target="_blank" rel="noreferrer"><img src="@item.CertificateImage" alt="Current certificate image" /><span>View current image</span></a> }
+        </div>
+        <div class="form-field">
+            <label>Organization logo <small>PNG, JPG or WebP · max 8 MB</small></label>
+            <input class="form-control" type="file" name="organizationLogoFile" accept=".png,.jpg,.jpeg,.webp" data-image-input />
+            @if (!string.IsNullOrWhiteSpace(item.OrganizationLogo)) { <a class="admin-upload-preview logo" href="@item.OrganizationLogo" target="_blank" rel="noreferrer"><img src="@item.OrganizationLogo" alt="Current organization logo" /><span>View current logo</span></a> }
+        </div>
+
+        <partial name="_OrderActiveFields" model="item" />
+    </div>
+    <partial name="_FormActions" />
+</form>

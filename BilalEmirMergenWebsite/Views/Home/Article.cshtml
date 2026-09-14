@@ -3,22 +3,34 @@
 @using BilalEmirMergenWebsite.Controllers
 @{
     var article = Model.Article;
-    var title = article.TitleEn.Or(article.Title);
-    var content = article.ContentEn.Or(article.Content);
-    var words = Regex.Replace(content, "<[^>]+>", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
-    var readingTime = Math.Max(1, (int)Math.Ceiling(words / 220d));
+    var culture = ViewBag.Culture?.ToString() ?? "tr";
+    var isTr = culture == "tr";
+    var title = isTr ? article.TitleTr.Or(article.Title).Or(article.TitleEn) : article.TitleEn.Or(article.Title);
+    var summary = isTr ? article.SummaryTr.Or(article.Summary).Or(article.SummaryEn) : article.SummaryEn.Or(article.Summary);
+    var category = isTr ? article.CategoryTr.Or(article.CategoryEn).Or("Mühendislik") : article.CategoryEn.Or("Engineering");
+    var content = isTr ? article.ContentTr.Or(article.Content).Or(article.ContentEn) : article.ContentEn.Or(article.Content);
+    var formattedMeta = TextExtensions.FormatBlogMeta(article.PublishedAt ?? article.CreatedAt, content, culture);
 }
 <article class="detail-page blog-detail">
-    <a class="back-link" href="/en#blog"><i data-lucide="arrow-left"></i>Back to blog</a>
-    <header class="article-header"><p class="detail-kicker">@article.CategoryEn.Or("Engineering")</p><h1>@title</h1><p>@article.SummaryEn.Or(article.Summary)</p><div><time datetime="@((article.PublishedAt ?? article.CreatedAt).ToString("O"))">@((article.PublishedAt ?? article.CreatedAt).ToString("dd MMMM yyyy"))</time><span>@readingTime min read</span><span>@article.Views views</span></div></header>
+    <a class="back-link" href="/blog-list"><i data-lucide="arrow-left"></i>@(isTr ? "Tüm Bloglara Dön" : "Back to all articles")</a>
+    <header class="article-header">
+        <p class="detail-kicker">@category</p>
+        <h1>@title</h1>
+        <p>@summary</p>
+        <div>
+            <time datetime="@((article.PublishedAt ?? article.CreatedAt).ToString("O"))">@formattedMeta</time>
+            <span>@article.Views @(isTr ? "görüntülenme" : "views")</span>
+        </div>
+    </header>
     @if (!string.IsNullOrWhiteSpace(article.CoverImage)) { <figure class="detail-cover article-cover"><img src="@article.CoverImage" alt="Cover for @title" fetchpriority="high" /></figure> }
     <div class="article-layout">
         <div class="rich-content article-prose">@Html.Raw(content)</div>
-        <aside class="article-share"><p>Share</p><a href="https://www.linkedin.com/sharing/share-offsite/?url=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" target="_blank" rel="noreferrer" aria-label="Share on LinkedIn"><i data-lucide="linkedin"></i></a><a href="mailto:?subject=@Uri.EscapeDataString(title)&body=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" aria-label="Share by email"><i data-lucide="mail"></i></a></aside>
+        <aside class="article-share"><p>@(isTr ? "Paylaş" : "Share")</p><a href="https://www.linkedin.com/sharing/share-offsite/?url=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" target="_blank" rel="noreferrer" aria-label="Share on LinkedIn"><i data-lucide="linkedin"></i></a><a href="mailto:?subject=@Uri.EscapeDataString(title)&body=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" aria-label="Share by email"><i data-lucide="mail"></i></a></aside>
     </div>
     @if (!string.IsNullOrWhiteSpace(article.Tags)) { <div class="article-tags">@foreach (var tag in article.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)) { <span>@tag</span> }</div> }
     <nav class="post-navigation" aria-label="Adjacent blog posts">
-        @if (Model.Previous is not null) { <a href="/en/blog/@Model.Previous.Slug"><span><i data-lucide="arrow-left"></i>Previous post</span><strong>@Model.Previous.TitleEn.Or(Model.Previous.Title)</strong></a> } else { <span></span> }
-        @if (Model.Next is not null) { <a class="next" href="/en/blog/@Model.Next.Slug"><span>Next post<i data-lucide="arrow-right"></i></span><strong>@Model.Next.TitleEn.Or(Model.Next.Title)</strong></a> }
+        @if (Model.Previous is not null) { <a href="/blog/@Model.Previous.Slug"><span><i data-lucide="arrow-left"></i>@(isTr ? "Önceki yazı" : "Previous post")</span><strong>@(isTr ? Model.Previous.TitleTr.Or(Model.Previous.Title).Or(Model.Previous.TitleEn) : Model.Previous.TitleEn.Or(Model.Previous.Title))</strong></a> } else { <span></span> }
+        @if (Model.Next is not null) { <a class="next" href="/blog/@Model.Next.Slug"><span>@(isTr ? "Sonraki yazı" : "Next post")<i data-lucide="arrow-right"></i></span><strong>@(isTr ? Model.Next.TitleTr.Or(Model.Next.Title).Or(Model.Next.TitleEn) : Model.Next.TitleEn.Or(Model.Next.Title))</strong></a> }
     </nav>
 </article>
+

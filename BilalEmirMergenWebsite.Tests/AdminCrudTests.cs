@@ -73,6 +73,22 @@ public sealed class AdminCrudTests : IClassFixture<PortfolioWebApplicationFactor
             ("IsActive", "false"), ("IsActive", "true"), ("SortOrder", "2")));
         AssertRedirect(socialResponse, "socials");
 
+        var certificatesPage = await GetPage(client, "/admin/dashboard?tab=certificates");
+        Assert.Contains("href=\"/admin/dashboard?tab=certificates\"", certificatesPage, StringComparison.Ordinal);
+        Assert.Contains("name=\"certificateImageFile\"", certificatesPage, StringComparison.Ordinal);
+        Assert.Contains("name=\"organizationLogoFile\"", certificatesPage, StringComparison.Ordinal);
+        var emptyCertificatesPublicPage = await GetPage(client, "/en");
+        Assert.Contains("id=\"certificates\"", emptyCertificatesPublicPage, StringComparison.Ordinal);
+        Assert.Contains("Certificates will appear here", emptyCertificatesPublicPage, StringComparison.Ordinal);
+        var certificateResponse = await client.PostAsync("/admin/certificate/save", Form(
+            ("__RequestVerificationToken", AntiforgeryToken(certificatesPage)),
+            ("NameEn", "Cloud Architecture Professional"), ("Organization", "Portfolio Academy"),
+            ("IssueDate", "2026-08-14"), ("DoesNotExpire", "true"), ("DoesNotExpire", "false"),
+            ("CredentialId", "CERT-2026-001"), ("CredentialUrl", "https://example.com/credentials/CERT-2026-001"),
+            ("DescriptionEn", "Advanced cloud architecture and platform engineering."),
+            ("IsActive", "true"), ("SortOrder", "1")));
+        AssertRedirect(certificateResponse, "certificates");
+
         await using var verifyScope = _factory.Services.CreateAsyncScope();
         var database = verifyScope.ServiceProvider.GetRequiredService<AppDbContext>();
         var savedSkill = (await database.Skills.FindAsync(skill.Id))!;
@@ -84,6 +100,29 @@ public sealed class AdminCrudTests : IClassFixture<PortfolioWebApplicationFactor
         Assert.Equal(aboutHtml, (await database.AboutSections.FindAsync(about.Id))!.DescriptionEn);
         var social = await database.Socials.SingleAsync(item => item.Name == "LinkedIn");
         Assert.True(social.IsActive);
+        var certificate = await database.Certificates.SingleAsync(item => item.CredentialId == "CERT-2026-001");
+        Assert.True(certificate.IsActive);
+        Assert.True(certificate.DoesNotExpire);
+        Assert.Null(certificate.ExpirationDate);
+
+        var publicPage = await GetPage(client, "/en");
+        Assert.Contains("id=\"certificates\"", publicPage, StringComparison.Ordinal);
+        Assert.Contains("Cloud Architecture Professional", publicPage, StringComparison.Ordinal);
+        Assert.Contains("View credential", publicPage, StringComparison.Ordinal);
+
+        var editCertificatePage = await GetPage(client, "/admin/dashboard?tab=certificates&editId=" + certificate.Id);
+        var updateCertificateResponse = await client.PostAsync("/admin/certificate/save", Form(
+            ("__RequestVerificationToken", AntiforgeryToken(editCertificatePage)), ("Id", certificate.Id),
+            ("NameEn", "Cloud Architecture Expert"), ("Organization", "Portfolio Academy"),
+            ("IssueDate", "2026-08-14"), ("ExpirationDate", "2028-08-14"),
+            ("CredentialId", "CERT-2026-001"), ("CredentialUrl", "https://example.com/credentials/CERT-2026-001"),
+            ("DescriptionEn", "Updated credential description."), ("IsActive", "true"), ("SortOrder", "1")));
+        AssertRedirect(updateCertificateResponse, "certificates");
+        database.ChangeTracker.Clear();
+        var updatedCertificate = (await database.Certificates.FindAsync(certificate.Id))!;
+        Assert.Equal("Cloud Architecture Expert", updatedCertificate.NameEn);
+        Assert.False(updatedCertificate.DoesNotExpire);
+        Assert.Equal(new DateTime(2028, 8, 14), updatedCertificate.ExpirationDate);
 
         var editSocialPage = await GetPage(client, "/admin/dashboard?tab=socials&editId=" + social.Id);
         var updateSocialResponse = await client.PostAsync("/admin/social/save", Form(
@@ -100,6 +139,13 @@ public sealed class AdminCrudTests : IClassFixture<PortfolioWebApplicationFactor
         AssertRedirect(deleteResponse, "socials");
         database.ChangeTracker.Clear();
         Assert.Null(await database.Socials.FindAsync(social.Id));
+
+        var deleteCertificatePage = await GetPage(client, "/admin/dashboard?tab=certificates");
+        var deleteCertificateResponse = await client.PostAsync("/admin/delete/certificate/" + certificate.Id, Form(
+            ("__RequestVerificationToken", AntiforgeryToken(deleteCertificatePage))));
+        AssertRedirect(deleteCertificateResponse, "certificates");
+        database.ChangeTracker.Clear();
+        Assert.Null(await database.Certificates.FindAsync(certificate.Id));
     }
 
     private static async Task SignIn(HttpClient client)
@@ -146,6 +192,7 @@ public sealed class PortfolioWebApplicationFactory : WebApplicationFactory<Progr
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("Jwt:Key", "portfolio-tests-only-jwt-key-2026-at-least-32-bytes");
+        builder.UseSetting("ConnectionStrings:DefaultConnection", "Server=(localdb)\\MSSQLLocalDB;Database=PortfolioTests;Trusted_Connection=True;TrustServerCertificate=True");
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<AppDbContext>();

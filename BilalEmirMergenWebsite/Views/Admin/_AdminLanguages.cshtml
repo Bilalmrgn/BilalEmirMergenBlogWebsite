@@ -1,6 +1,6 @@
 @model BilalEmirMergenWebsite.Controllers.DashboardViewModel
 @{ var item = Model.Languages.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.SpokenLanguage { Percentage = 80 }; }
-<div class="admin-panel-header"><div><p class="admin-eyebrow">Communication</p><h2>Languages</h2></div><a class="btn" href="/en#languages" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Communication</p><h2>Languages</h2></div><a class="btn" href="/#languages" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
 <partial name="_OrderedTable" model='new BilalEmirMergenWebsite.Controllers.OrderedTableViewModel("language", Model.Languages.Select(value => (value.Id, value.NameEn, value.LevelEn, value.SortOrder, value.IsActive)))' />
 <form class="admin-editor admin-form open" method="post" action="/admin/language/save">
     @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="NameTr" value="@item.NameTr" /><input type="hidden" name="NameAr" value="@item.NameAr" /><input type="hidden" name="LevelTr" value="@item.LevelTr" /><input type="hidden" name="LevelAr" value="@item.LevelAr" />

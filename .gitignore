@@ -365,3 +365,6 @@ FodyWeavers.xsd
 # ASP.NET configuration files
 appsettings.json
 appsettings.*.json
+!BilalEmirMergenWebsite/appsettings.json
+!BilalEmirMergenWebsite/appsettings.Development.json
+!BilalEmirMergenWebsite/appsettings.Production.json

@@ -5,7 +5,7 @@
     var socialIcon = string.IsNullOrWhiteSpace(item.Icon) ? "link" : item.Icon;
     var selectedIconName = SocialIconCatalog.All.FirstOrDefault(option => option.Icon == socialIcon)?.Name ?? "Choose icon";
 }
-<div class="admin-panel-header"><div><p class="admin-eyebrow">Contact channels</p><h2>Social links</h2></div><a class="btn" href="/en#contact" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Contact channels</p><h2>Social links</h2></div><a class="btn" href="/#contact" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
 <partial name="_OrderedTable" model='new BilalEmirMergenWebsite.Controllers.OrderedTableViewModel("social", Model.Socials.Select(value => (value.Id, value.Name, value.Url, value.SortOrder, value.IsActive)))' />
 <form class="admin-editor admin-form open social-editor-form" method="post" action="/admin/social/save">
     @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" />

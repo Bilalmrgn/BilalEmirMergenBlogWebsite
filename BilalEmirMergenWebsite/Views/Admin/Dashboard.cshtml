@@ -7,7 +7,7 @@
 <div class="cms-shell">
     <partial name="_AdminSidebar" model="Model" />
     <div class="cms-workspace">
-        <header class="cms-mobile-header"><button type="button" data-admin-sidebar-open aria-label="Open admin navigation"><i data-lucide="menu"></i></button><strong>Portfolio Admin</strong><a href="/en" target="_blank" rel="noreferrer" aria-label="Preview portfolio"><i data-lucide="external-link"></i></a></header>
+        <header class="cms-mobile-header"><button type="button" data-admin-sidebar-open aria-label="Open admin navigation"><i data-lucide="menu"></i></button><strong>Portfolio Admin</strong><a href="/" target="_blank" rel="noreferrer" aria-label="Preview portfolio"><i data-lucide="external-link"></i></a></header>
         <div class="cms-content">
             <span class="admin-save-state" aria-live="polite" data-admin-status></span>
             @if (TempData["Success"] is not null) { <div class="cms-toast success" role="status"><i data-lucide="circle-check"></i><span>@TempData["Success"]</span><button type="button" data-dismiss-toast aria-label="Dismiss notification"><i data-lucide="x"></i></button></div> }

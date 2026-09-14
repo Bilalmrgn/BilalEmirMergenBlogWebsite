@@ -33,6 +33,10 @@ namespace BilalEmirMergenWebsite.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            // Always target the same schema regardless of the SQL login's default schema.
+            // Without this, production created/read bilalmrgn.* while local development
+            // created/read dbo.*, splitting portfolio content across duplicate tables.
+            modelBuilder.HasDefaultSchema("dbo");
 
             // Configure Project.Tags list conversion to comma-separated string for SQL Server
             modelBuilder.Entity<Project>()
@@ -48,6 +52,10 @@ namespace BilalEmirMergenWebsite.Data
 
             modelBuilder.Entity<Project>().HasIndex(p => p.Slug);
             modelBuilder.Entity<Article>().HasIndex(a => a.Slug);
+            modelBuilder.Entity<Article>().HasIndex(a => new { a.IsActive, a.PublishedAt });
+            modelBuilder.Entity<Certificate>().HasIndex(c => new { c.IsActive, c.SortOrder });
+            modelBuilder.Entity<Project>().HasIndex(p => new { p.IsActive, p.SortOrder });
+
             modelBuilder.Entity<Skill>().Property(skill => skill.YearsOfExperience).HasPrecision(4, 1);
             modelBuilder.Entity<Skill>()
                 .HasOne(s => s.Category)

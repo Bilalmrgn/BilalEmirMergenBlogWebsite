@@ -11,6 +11,7 @@
     var about = Model.AboutSections.FirstOrDefault() ?? new BilalEmirMergenWebsite.Models.AboutSection();
     var profileImage = settings.ProfileImage.Or(about.ImageUrl);
     var categories = Model.Projects.Select(item => item.CategoryEn.Or(item.Status).Or("Other")).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    var navigationIndex = 1;
 }
 
 <div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
@@ -28,18 +29,19 @@
             {
                 <div class="profile-fallback" aria-hidden="true">BM</div>
             }
-            <h1>@settings.FullName.Or("Bilal Emir Mergen")</h1>
-            <p>@settings.TitleEn.Or("Full Stack Software Engineer")</p>
+            <h1>@settings.FullName.Or(settings.BrandName.Or("Portfolio"))</h1>
+            @if (!string.IsNullOrWhiteSpace(settings.TitleEn)) { <p>@settings.TitleEn</p> }
         </div>
         <nav class="portfolio-nav" aria-label="Portfolio sections">
-            <a class="active" href="#about"><span>01</span>About</a>
-            @if (Model.Experiences.Any()) { <a href="#experience"><span>02</span>Experience</a> }
-            @if (Model.Educations.Any()) { <a href="#education"><span>03</span>Education</a> }
-            @if (Model.SkillCategories.Any()) { <a href="#skills"><span>04</span>Skills</a> }
-            @if (Model.Projects.Any()) { <a href="#projects"><span>05</span>Projects</a> }
-            @if (Model.Languages.Any()) { <a href="#languages"><span>06</span>Languages</a> }
-            @if (Model.Articles.Any()) { <a href="#blog"><span>07</span>Blog</a> }
-            <a href="#contact"><span>08</span>Contact</a>
+            <a class="active" href="#about"><span>@((navigationIndex++).ToString("00"))</span>About</a>
+            @if (Model.Experiences.Any()) { <a href="#experience"><span>@((navigationIndex++).ToString("00"))</span>Experience</a> }
+            @if (Model.Educations.Any()) { <a href="#education"><span>@((navigationIndex++).ToString("00"))</span>Education</a> }
+            <a href="#certificates"><span>@((navigationIndex++).ToString("00"))</span>Certificates</a>
+            @if (Model.SkillCategories.Any()) { <a href="#skills"><span>@((navigationIndex++).ToString("00"))</span>Skills</a> }
+            @if (Model.Projects.Any()) { <a href="#projects"><span>@((navigationIndex++).ToString("00"))</span>Projects</a> }
+            @if (Model.Languages.Any()) { <a href="#languages"><span>@((navigationIndex++).ToString("00"))</span>Languages</a> }
+            @if (Model.Articles.Any()) { <a href="#blog"><span>@((navigationIndex++).ToString("00"))</span>Blog</a> }
+            <a href="#contact"><span>@((navigationIndex++).ToString("00"))</span>Contact</a>
         </nav>
         <div class="sidebar-footer">
             <div class="sidebar-socials">
@@ -48,9 +50,9 @@
                     <a href="@social.Url" target="@(social.Url.StartsWith("mailto:") ? null : "_blank")" rel="noreferrer" aria-label="@social.Name"><i data-lucide="@social.Icon"></i></a>
                 }
             </div>
-            @if (settings.IsAvailable)
+            @if (settings.IsAvailable && !string.IsNullOrWhiteSpace(settings.AvailabilityEn))
             {
-                <p class="availability"><span></span>@settings.AvailabilityEn.Or("Available for selected work")</p>
+                <p class="availability"><span></span>@settings.AvailabilityEn</p>
             }
         </div>
     </aside>
@@ -74,7 +76,7 @@
                     @if (!string.IsNullOrWhiteSpace(settings.TitleEn)) { <div><dt>Role</dt><dd>@settings.TitleEn</dd></div> }
                     @if (!string.IsNullOrWhiteSpace(settings.LocationEn)) { <div><dt>Based in</dt><dd>@settings.LocationEn</dd></div> }
                     @if (!string.IsNullOrWhiteSpace(settings.Email)) { <div><dt>Email</dt><dd><a href="mailto:@settings.Email">@settings.Email</a></dd></div> }
-                    <div><dt>Focus</dt><dd>Product engineering · Web systems</dd></div>
+                    @if (!string.IsNullOrWhiteSpace(settings.SubtitleEn)) { <div><dt>Focus</dt><dd>@settings.SubtitleEn</dd></div> }
                 </dl>
             </div>
         </section>
@@ -121,6 +123,78 @@
             </section>
         }
 
+        <section class="portfolio-section certificates-section" id="certificates" aria-labelledby="certificates-title">
+            <div class="section-header-row">
+                <header class="section-heading" data-reveal>
+                    <p>@(Model.IsTr ? "Sertifikalar ve Başarı Belgeleri" : "Credentials & recognition")</p>
+                    <h2 id="certificates-title">@(Model.IsTr ? "Sertifikalar" : "Certificates")</h2>
+                </header>
+                <div class="header-action" data-reveal>
+                    <a class="primary-button" href="/certificates-list">
+                        <i data-lucide="award"></i>
+                        @(Model.IsTr ? "Bütün Sertifikalarımı Görüntüle" : "View All Certificates")
+                    </a>
+                </div>
+            </div>
+            @if (Model.Certificates.Any())
+            {
+                <div class="certificate-showcase-grid">
+                    @foreach (var item in Model.Certificates)
+                    {
+                        var certificateName = TextExtensions.Localized(item.NameEn, item.NameTr, item.NameAr, Model.Culture).Or(item.NameEn.Or(item.NameTr));
+                        var description = TextExtensions.Localized(item.DescriptionEn, item.DescriptionTr, item.DescriptionAr, Model.Culture);
+                        var issueLabel = item.IssueDate?.ToString("MMM yyyy");
+                        var expirationLabel = item.DoesNotExpire ? (Model.IsTr ? "Süresiz" : "Does not expire") : item.ExpirationDate.HasValue ? $"{(Model.IsTr ? "Geçerlilik" : "Valid until")} {item.ExpirationDate.Value:MMM yyyy}" : string.Empty;
+                        <article class="portfolio-certificate-card" data-reveal>
+                            <div class="certificate-visual">
+                                @if (!string.IsNullOrWhiteSpace(item.CertificateImage))
+                                {
+                                    <a href="@item.CertificateImage" target="_blank" rel="noreferrer" aria-label="Open @certificateName certificate image"><img src="@item.CertificateImage" alt="@certificateName certificate" loading="lazy" /></a>
+                                }
+                                else
+                                {
+                                    <div class="certificate-placeholder" aria-hidden="true"><i data-lucide="award"></i><span>@item.Organization</span></div>
+                                }
+                                <span class="certificate-ribbon"><i data-lucide="badge-check"></i>@(Model.IsTr ? "Onaylı Sertifika" : "Professional credential")</span>
+                            </div>
+                            <div class="certificate-card-content">
+                                <div class="certificate-issuer">
+                                    @if (!string.IsNullOrWhiteSpace(item.OrganizationLogo)) { <img src="@item.OrganizationLogo" alt="" loading="lazy" /> } else { <span><i data-lucide="building-2"></i></span> }
+                                    <div><small>@(Model.IsTr ? "Veren Kurum" : "Issued by")</small><strong>@item.Organization</strong></div>
+                                </div>
+                                <h3>@certificateName</h3>
+                                @if (!string.IsNullOrWhiteSpace(description)) { <p>@description</p> }
+                                @if (!string.IsNullOrWhiteSpace(issueLabel) || !string.IsNullOrWhiteSpace(expirationLabel) || !string.IsNullOrWhiteSpace(item.CredentialId))
+                                {
+                                    <dl class="certificate-meta">
+                                        @if (!string.IsNullOrWhiteSpace(issueLabel)) { <div><dt>@(Model.IsTr ? "Veriliş" : "Issued")</dt><dd>@issueLabel</dd></div> }
+                                        @if (!string.IsNullOrWhiteSpace(expirationLabel)) { <div><dt>@(Model.IsTr ? "Geçerlilik" : "Validity")</dt><dd>@expirationLabel</dd></div> }
+                                        @if (!string.IsNullOrWhiteSpace(item.CredentialId)) { <div><dt>ID</dt><dd>@item.CredentialId</dd></div> }
+                                    </dl>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.CredentialUrl)) { <a class="certificate-verify-link" href="@item.CredentialUrl" target="_blank" rel="noreferrer">@(Model.IsTr ? "Sertifikayı görüntüle" : "View credential")<i data-lucide="arrow-up-right"></i></a> }
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                <div class="section-footer-action" style="text-align: center; margin-top: 2.5rem;" data-reveal>
+                    <a class="primary-button" href="/certificates-list">
+                        <i data-lucide="award"></i>
+                        @(Model.IsTr ? "Bütün Sertifikalarımı Görüntüle" : "View All Certificates")
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="certificate-empty-state" data-reveal>
+                    <span><i data-lucide="award"></i></span>
+                    <div><h3>@(Model.IsTr ? "Sertifikalar burada görünecek" : "Certificates will appear here")</h3><p>@(Model.IsTr ? "Yayınlanan sertifikalar eklandikçe otomatik olarak listelenir." : "Published credentials added from the admin panel are displayed automatically.")</p></div>
+                </div>
+            }
+        </section>
+
         @if (Model.SkillCategories.Any())
         {
             <section class="portfolio-section skills-section" id="skills" aria-labelledby="skills-title">
@@ -153,7 +227,18 @@
         @if (Model.Projects.Any())
         {
             <section class="portfolio-section" id="projects" aria-labelledby="projects-title">
-                <header class="section-heading" data-reveal><p>Selected work</p><h2 id="projects-title">Projects</h2></header>
+                <div class="section-header-row">
+                    <header class="section-heading" data-reveal>
+                        <p>@(Model.IsTr ? "Öne Çıkan Çalışmalar" : "Selected work")</p>
+                        <h2 id="projects-title">@(Model.IsTr ? "Projeler" : "Projects")</h2>
+                    </header>
+                    <div class="header-action" data-reveal>
+                        <a class="primary-button" href="/projects-list">
+                            <i data-lucide="folder-git-2"></i>
+                            @(Model.IsTr ? "Bütün Projelerimi Görüntüle" : "View All Projects")
+                        </a>
+                    </div>
+                </div>
                 <div class="project-filters" role="group" aria-label="Filter projects" data-reveal><button class="active" type="button" data-project-filter="all" aria-pressed="true">All</button>@foreach (var category in categories) { <button type="button" data-project-filter="@Key(category)" aria-pressed="false">@category</button> }</div>
                 <div class="project-grid">
                     @foreach (var item in Model.Projects)
@@ -161,10 +246,17 @@
                         var title = item.TitleEn.Or(item.Title);
                         var category = item.CategoryEn.Or(item.Status).Or("Other");
                         <article class="project-card" data-project-category="@Key(category)" data-reveal>
-                            <a class="project-image" href="/en/projects/@item.Slug" aria-label="View @title case study">@if (!string.IsNullOrWhiteSpace(item.ImageUrl)) { <img src="@item.ImageUrl" alt="@title project preview" loading="lazy" /> } else { <div><i data-lucide="code-2"></i><span>@title</span></div> }@if (item.IsFeatured) { <span class="featured-badge"><i data-lucide="star"></i>Featured</span> }</a>
-                            <div class="project-card-body"><p class="project-category">@category</p><h3><a href="/en/projects/@item.Slug">@title</a></h3><p>@item.ShortDescriptionEn.Or(item.DescriptionEn.PlainSummary())</p><div class="tag-list">@foreach (var tag in item.Tags.Take(5)) { <span>@tag</span> }</div><div class="project-links"><a href="/en/projects/@item.Slug">Case study<i data-lucide="arrow-up-right"></i></a>@if (!string.IsNullOrWhiteSpace(item.GitHubUrl)) { <a href="@item.GitHubUrl" target="_blank" rel="noreferrer" aria-label="GitHub"><i data-lucide="github"></i></a> }@if (!string.IsNullOrWhiteSpace(item.ProjectUrl)) { <a href="@item.ProjectUrl" target="_blank" rel="noreferrer" aria-label="Live demo"><i data-lucide="external-link"></i></a> }</div></div>
+                            <a class="project-image" href="/projects/@item.Slug" aria-label="View @title case study">@if (!string.IsNullOrWhiteSpace(item.ImageUrl)) { <img src="@item.ImageUrl" alt="@title project preview" loading="lazy" /> } else { <div><i data-lucide="code-2"></i><span>@title</span></div> }@if (item.IsFeatured) { <span class="featured-badge"><i data-lucide="star"></i>Featured</span> }</a>
+                            <div class="project-card-body"><p class="project-category">@category</p><h3><a href="/projects/@item.Slug">@title</a></h3><p>@item.ShortDescriptionEn.Or(item.DescriptionEn.PlainSummary())</p><div class="tag-list">@foreach (var tag in item.Tags.Take(5)) { <span>@tag</span> }</div><div class="project-links"><a href="/projects/@item.Slug">Case study<i data-lucide="arrow-up-right"></i></a>@if (!string.IsNullOrWhiteSpace(item.GitHubUrl)) { <a href="@item.GitHubUrl" target="_blank" rel="noreferrer" aria-label="GitHub"><i data-lucide="github"></i></a> }@if (!string.IsNullOrWhiteSpace(item.ProjectUrl)) { <a href="@item.ProjectUrl" target="_blank" rel="noreferrer" aria-label="Live demo"><i data-lucide="external-link"></i></a> }</div></div>
                         </article>
                     }
+                </div>
+                <div class="section-footer-action" style="text-align: center; margin-top: 2.5rem;" data-reveal>
+                    <a class="primary-button" href="/projects-list">
+                        <i data-lucide="folder-git-2"></i>
+                        @(Model.IsTr ? "Bütün Projelerimi Görüntüle" : "View All Projects")
+                        <i data-lucide="arrow-right"></i>
+                    </a>
                 </div>
             </section>
         }
@@ -182,32 +274,143 @@
             </section>
         }
 
-        @if (Model.Articles.Any())
+        @if (Model.Articles.Any() || Model.BlogTotalCount > 0)
         {
             <section class="portfolio-section" id="blog" aria-labelledby="blog-title">
-                <header class="section-heading" data-reveal><p>Writing & ideas</p><h2 id="blog-title">Latest from the blog</h2></header>
+                <div class="blog-section-header">
+                    <header class="section-heading" data-reveal>
+                        <p>@(Model.IsTr ? "Yazılar & Fikirler" : "Writing & ideas")</p>
+                        <h2 id="blog-title">@(Model.IsTr ? "Blog" : "Latest from the blog")</h2>
+                    </header>
+                    <div class="blog-header-action" data-reveal>
+                        <a class="primary-button" href="/blog-list">
+                            <i data-lucide="newspaper"></i>
+                            @(Model.IsTr ? "Bütün Bloglarımı Görüntüle" : "View All Blog Posts")
+                        </a>
+                    </div>
+                </div>
                 <div class="blog-grid">
                     @foreach (var item in Model.Articles)
                     {
-                        var title = item.TitleEn.Or(item.Title);
-                        var url = item.IsInternal ? $"/en/blog/{item.Slug}" : item.ExternalUrl;
+                        var title = Model.IsTr ? item.TitleTr.Or(item.Title).Or(item.TitleEn) : item.TitleEn.Or(item.Title);
+                        var summary = Model.IsTr ? item.SummaryTr.Or(item.Summary).Or(item.SummaryEn) : item.SummaryEn.Or(item.Summary);
+                        var category = Model.IsTr ? item.CategoryTr.Or(item.CategoryEn).Or("Mühendislik") : item.CategoryEn.Or("Engineering");
+                        var url = item.IsInternal ? $"/blog/{item.Slug}" : item.ExternalUrl;
+                        var contentHtml = Model.IsTr ? item.ContentTr.Or(item.Content) : item.ContentEn.Or(item.Content);
+                        var formattedMeta = TextExtensions.FormatBlogMeta(item.PublishedAt ?? item.CreatedAt, contentHtml, Model.Culture);
+
                         <article class="blog-card" data-reveal>
                             <a class="blog-image" href="@url">
                                 @if (!string.IsNullOrWhiteSpace(item.CoverImage)) { <img src="@item.CoverImage" alt="@title" loading="lazy" data-image-fallback /> }
                                 <span class="image-placeholder"><i data-lucide="file-text"></i><small>Bilal Emir Mergen</small></span>
                             </a>
-                            <div><div class="blog-meta"><span>@item.CategoryEn.Or("Engineering")</span><time>@(item.PublishedAt ?? item.CreatedAt).ToString("MMM d, yyyy") · @ReadTime(item.ContentEn.Or(item.Content)) min read</time></div><h3><a href="@url">@title</a></h3><p>@item.SummaryEn.Or(item.Summary)</p><a class="read-more" href="@url" target="@(!item.IsInternal ? "_blank" : null)">Read article<i data-lucide="arrow-right"></i></a></div>
+                            <div>
+                                <div class="blog-meta">
+                                    <span>@category</span>
+                                    <time>@formattedMeta</time>
+                                </div>
+                                <h3><a href="@url">@title</a></h3>
+                                <p>@summary</p>
+                                <a class="read-more" href="@url" target="@(!item.IsInternal ? "_blank" : null)">
+                                    @(Model.IsTr ? "Yazıyı oku" : "Read article")
+                                    <i data-lucide="arrow-right"></i>
+                                </a>
+                            </div>
                         </article>
                     }
                 </div>
+
+                <div class="blog-footer-action" style="text-align: center; margin-top: 2.5rem;" data-reveal>
+                    <a class="primary-button" href="/blog-list">
+                        <i data-lucide="newspaper"></i>
+                        @(Model.IsTr ? "Bütün Bloglarımı Görüntüle" : "View All Blog Posts")
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+
+                @if (!Model.IsShowAllBlog && Model.BlogTotalPages > 1)
+                {
+                    <nav class="pagination-nav" aria-label="Blog pagination">
+                        @if (Model.BlogPage > 1)
+                        {
+                            <a href="?blogPage=@(Model.BlogPage - 1)&certPage=@Model.CertPage#blog" aria-label="Previous page">&laquo; @(Model.IsTr ? "Önceki" : "Previous")</a>
+                        }
+                        else
+                        {
+                            <span class="page-num disabled">&laquo; @(Model.IsTr ? "Önceki" : "Previous")</span>
+                        }
+
+                        @for (int p = 1; p <= Model.BlogTotalPages; p++)
+                        {
+                            if (p == Model.BlogPage)
+                            {
+                                <span class="page-num active">@p</span>
+                            }
+                            else
+                            {
+                                <a href="?blogPage=@p&certPage=@Model.CertPage#blog">@p</a>
+                            }
+                        }
+
+                        @if (Model.BlogPage < Model.BlogTotalPages)
+                        {
+                            <a href="?blogPage=@(Model.BlogPage + 1)&certPage=@Model.CertPage#blog" aria-label="Next page">@(Model.IsTr ? "Sonraki" : "Next") &raquo;</a>
+                        }
+                        else
+                        {
+                            <span class="page-num disabled">@(Model.IsTr ? "Sonraki" : "Next") &raquo;</span>
+                        }
+                    </nav>
+                }
             </section>
         }
 
-        <section class="contact-section" id="contact" aria-labelledby="contact-title" data-reveal>
-            <p>Have a project or opportunity?</p>
-            <h2 id="contact-title">@settings.ContactTitleEn.Or("Let’s build something useful.")</h2>
-            <div class="contact-row"><p>@settings.ContactTextEn.Or("I’m always interested in thoughtful products, ambitious teams, and engineering challenges worth solving.")</p>@if (!string.IsNullOrWhiteSpace(settings.Email)) { <a class="primary-button" href="mailto:@settings.Email">Start a conversation<i data-lucide="arrow-up-right"></i></a> }</div>
-            <div class="contact-socials">@foreach (var social in Model.Socials) { <a href="@social.Url" target="@(social.Url.StartsWith("mailto:") ? null : "_blank")" rel="noreferrer"><i data-lucide="@social.Icon"></i>@social.Name</a> }</div>
+        <section class="portfolio-section contact-section" id="contact" aria-labelledby="contact-title" data-reveal>
+            <header class="section-heading">
+                <p>@(Model.IsTr ? "İletişim" : "Get in Touch")</p>
+                <h2 id="contact-title">@(Model.IsTr ? "İletişime Geç" : "Get in Touch")</h2>
+                <span class="contact-description">@(Model.IsTr ? "Bir proje, iş birliği veya yazılım üzerine konuşmak istersen benimle iletişime geçebilirsin." : "If you'd like to talk about a project, collaboration, or software development, feel free to contact me.")</span>
+            </header>
+            <div class="contact-links-grid">
+                @{
+                    var githubUrl = Model.Socials.FirstOrDefault(s => s.Name.Equals("GitHub", StringComparison.OrdinalIgnoreCase))?.Url ?? "https://github.com/Bilalmrgn";
+                    var linkedinUrl = Model.Socials.FirstOrDefault(s => s.Name.Equals("LinkedIn", StringComparison.OrdinalIgnoreCase))?.Url ?? "https://linkedin.com";
+                    var emailAddress = settings.Email.Or("bilalmergen@example.com");
+                }
+                @if (!string.IsNullOrWhiteSpace(githubUrl))
+                {
+                    <a class="contact-card-btn" href="@githubUrl" target="_blank" rel="noopener noreferrer">
+                        <i data-lucide="github"></i>
+                        <div class="contact-btn-info">
+                            <strong>GitHub</strong>
+                            <small>github.com/Bilalmrgn</small>
+                        </div>
+                        <i data-lucide="arrow-up-right" class="external-icon"></i>
+                    </a>
+                }
+                @if (!string.IsNullOrWhiteSpace(linkedinUrl))
+                {
+                    <a class="contact-card-btn" href="@linkedinUrl" target="_blank" rel="noopener noreferrer">
+                        <i data-lucide="linkedin"></i>
+                        <div class="contact-btn-info">
+                            <strong>LinkedIn</strong>
+                            <small>linkedin.com</small>
+                        </div>
+                        <i data-lucide="arrow-up-right" class="external-icon"></i>
+                    </a>
+                }
+                @if (!string.IsNullOrWhiteSpace(emailAddress))
+                {
+                    <a class="contact-card-btn" href="mailto:@emailAddress">
+                        <i data-lucide="mail"></i>
+                        <div class="contact-btn-info">
+                            <strong>Email</strong>
+                            <small>@emailAddress</small>
+                        </div>
+                        <i data-lucide="arrow-up-right" class="external-icon"></i>
+                    </a>
+                }
+            </div>
         </section>
     </div>
 </div>

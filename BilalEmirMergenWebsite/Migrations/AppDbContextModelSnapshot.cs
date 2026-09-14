@@ -17,6 +17,7 @@ namespace BilalEmirMergenWebsite.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -87,7 +88,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AboutSections");
+                    b.ToTable("AboutSections", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.AcademicFoundation", b =>
@@ -131,7 +132,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AcademicFoundations");
+                    b.ToTable("AcademicFoundations", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.AdminUser", b =>
@@ -157,7 +158,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AdminUsers");
+                    b.ToTable("AdminUsers", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Analytics", b =>
@@ -178,7 +179,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Analytics");
+                    b.ToTable("Analytics", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Article", b =>
@@ -302,7 +303,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasIndex("Slug");
 
-                    b.ToTable("Articles");
+                    b.ToTable("Articles", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Certificate", b =>
@@ -371,7 +372,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Certificates");
+                    b.ToTable("Certificates", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Education", b =>
@@ -475,7 +476,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Educations");
+                    b.ToTable("Educations", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.EngineeringConcept", b =>
@@ -523,7 +524,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EngineeringConcepts");
+                    b.ToTable("EngineeringConcepts", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Experience", b =>
@@ -620,7 +621,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Experiences");
+                    b.ToTable("Experiences", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Project", b =>
@@ -746,7 +747,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasIndex("Slug");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Service", b =>
@@ -794,7 +795,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Services");
+                    b.ToTable("Services", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.SiteSettings", b =>
@@ -959,7 +960,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SiteSettings");
+                    b.ToTable("SiteSettings", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Skill", b =>
@@ -1024,7 +1025,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.SkillCategory", b =>
@@ -1072,7 +1073,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SkillCategories");
+                    b.ToTable("SkillCategories", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Social", b =>
@@ -1082,25 +1083,28 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.Property<string>("Icon")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
                     b.Property<string>("Url")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Socials");
+                    b.ToTable("Socials", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.SpokenLanguage", b =>
@@ -1151,7 +1155,7 @@ namespace BilalEmirMergenWebsite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SpokenLanguages");
+                    b.ToTable("SpokenLanguages", "dbo");
                 });
 
             modelBuilder.Entity("BilalEmirMergenWebsite.Models.Skill", b =>

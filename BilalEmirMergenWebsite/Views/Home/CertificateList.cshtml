@@ -1,0 +1,116 @@
+@model BilalEmirMergenWebsite.Controllers.CertificateListViewModel
+@using BilalEmirMergenWebsite.Controllers
+@{
+    var isTr = Model.IsTr;
+    var culture = Model.Culture;
+}
+
+<div class="portfolio-content" style="padding-top: 40px; padding-bottom: 80px;">
+    <nav class="breadcrumb-nav" style="margin-bottom: 24px;" data-reveal>
+        <a class="back-link" href="/" style="display: inline-flex; align-items: center; gap: 8px; color: var(--copy); font-weight: 600; text-decoration: none;">
+            <i data-lucide="arrow-left"></i>
+            @(isTr ? "Ana Sayfaya Dön" : "Back to Home")
+        </a>
+    </nav>
+
+    <header class="full-list-hero" data-reveal>
+        <span class="full-list-badge"><i data-lucide="award"></i> @(isTr ? "Sertifikalar" : "Certificates")</span>
+        <h1 style="font: 700 38px/1.15 var(--serif); color: var(--ink); margin-top: 4px;">
+            @(isTr ? "Tüm Sertifikalarım" : "All Certificates")
+        </h1>
+        <p style="color: var(--copy); max-width: 680px; margin-top: 10px; font-size: 15px; line-height: 1.6;">
+            @(isTr ? "Kazandığım sertifikalar ve başarı belgeleri." : "Verified credentials and certifications.")
+        </p>
+    </header>
+
+    @if (Model.Certificates.Any())
+    {
+        <div class="full-list-grid">
+            @foreach (var item in Model.Certificates)
+            {
+                var certificateName = TextExtensions.Localized(item.NameEn, item.NameTr, item.NameAr, culture).Or(item.NameEn.Or(item.NameTr));
+                var description = TextExtensions.Localized(item.DescriptionEn, item.DescriptionTr, item.DescriptionAr, culture);
+                var issueLabel = item.IssueDate?.ToString("MMM yyyy");
+                var expirationLabel = item.DoesNotExpire ? (isTr ? "Süresiz" : "Does not expire") : item.ExpirationDate.HasValue ? $"{(isTr ? "Geçerlilik" : "Valid until")} {item.ExpirationDate.Value:MMM yyyy}" : string.Empty;
+
+                <article class="portfolio-certificate-card" data-reveal>
+                    <div class="certificate-visual">
+                        @if (!string.IsNullOrWhiteSpace(item.CertificateImage))
+                        {
+                            <a href="@item.CertificateImage" target="_blank" rel="noreferrer" aria-label="Open @certificateName certificate image"><img src="@item.CertificateImage" alt="@certificateName certificate" loading="lazy" /></a>
+                        }
+                        else
+                        {
+                            <div class="certificate-placeholder" aria-hidden="true"><i data-lucide="award"></i><span>@item.Organization</span></div>
+                        }
+                        <span class="certificate-ribbon"><i data-lucide="badge-check"></i>@(isTr ? "Onaylı" : "Verified")</span>
+                    </div>
+                    <div class="certificate-card-content" style="padding: 16px;">
+                        <div class="certificate-issuer">
+                            @if (!string.IsNullOrWhiteSpace(item.OrganizationLogo)) { <img src="@item.OrganizationLogo" alt="" loading="lazy" /> } else { <span><i data-lucide="building-2"></i></span> }
+                            <div><small>@(isTr ? "Veren Kurum" : "Issued by")</small><strong style="font-size: 11px;">@item.Organization</strong></div>
+                        </div>
+                        <h3 style="font-size: 14px; margin: 8px 0 6px;">@certificateName</h3>
+                        @if (!string.IsNullOrWhiteSpace(description)) { <p style="font-size: 11px; line-height: 1.4;">@description</p> }
+                        @if (!string.IsNullOrWhiteSpace(issueLabel) || !string.IsNullOrWhiteSpace(expirationLabel) || !string.IsNullOrWhiteSpace(item.CredentialId))
+                        {
+                            <dl class="certificate-meta" style="margin-top: 10px; font-size: 10px;">
+                                @if (!string.IsNullOrWhiteSpace(issueLabel)) { <div><dt>@(isTr ? "Veriliş" : "Issued")</dt><dd>@issueLabel</dd></div> }
+                                @if (!string.IsNullOrWhiteSpace(expirationLabel)) { <div><dt>@(isTr ? "Geçerlilik" : "Validity")</dt><dd>@expirationLabel</dd></div> }
+                                @if (!string.IsNullOrWhiteSpace(item.CredentialId)) { <div><dt>ID</dt><dd>@item.CredentialId</dd></div> }
+                            </dl>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.CredentialUrl))
+                        {
+                            <a class="certificate-verify-link" href="@item.CredentialUrl" target="_blank" rel="noreferrer" style="margin-top: 10px; font-size: 11px;">
+                                @(isTr ? "Doğrula" : "Verify")<i data-lucide="arrow-up-right"></i>
+                            </a>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="pagination-nav" aria-label="Certificate list pagination">
+                @if (Model.CurrentPage > 1)
+                {
+                    <a href="?page=@(Model.CurrentPage - 1)" aria-label="Previous page">&laquo; @(isTr ? "Önceki" : "Previous")</a>
+                }
+                else
+                {
+                    <span class="page-num disabled">&laquo; @(isTr ? "Önceki" : "Previous")</span>
+                }
+
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    if (p == Model.CurrentPage)
+                    {
+                        <span class="page-num active">@p</span>
+                    }
+                    else
+                    {
+                        <a href="?page=@p">@p</a>
+                    }
+                }
+
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a href="?page=@(Model.CurrentPage + 1)" aria-label="Next page">@(isTr ? "Sonraki" : "Next") &raquo;</a>
+                }
+                else
+                {
+                    <span class="page-num disabled">@(isTr ? "Sonraki" : "Next") &raquo;</span>
+                }
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="empty-state" style="text-align: center; padding: 60px 20px; background: var(--white); border: 1px solid var(--line); border-radius: 8px;">
+            <i data-lucide="award" style="width: 48px; height: 48px; color: var(--copy); margin-bottom: 16px;"></i>
+            <h3>@(isTr ? "Henüz eklenmiş sertifika bulunmuyor." : "No certificates available yet.")</h3>
+        </div>
+    }
+</div>

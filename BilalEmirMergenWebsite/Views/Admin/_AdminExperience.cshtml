@@ -1,6 +1,6 @@
 @model BilalEmirMergenWebsite.Controllers.DashboardViewModel
 @{ var item = Model.Experiences.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Experience { StartDate = DateTime.Today, TimelineColor = "#2F9CF4" }; }
-<div class="admin-panel-header"><div><p class="admin-eyebrow">Career timeline</p><h2>Work experience</h2></div><a class="btn" href="/en#experience" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Career timeline</p><h2>Work experience</h2></div><a class="btn" href="/#experience" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
 <partial name="_OrderedTable" model='new BilalEmirMergenWebsite.Controllers.OrderedTableViewModel("experience", Model.Experiences.Select(value => (value.Id, value.RoleEn, value.CompanyName, value.SortOrder, value.IsActive)))' />
 <form class="admin-editor admin-form open" method="post" action="/admin/experience/save" enctype="multipart/form-data">
     @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="CompanyLogoUrl" value="@item.CompanyLogoUrl" />

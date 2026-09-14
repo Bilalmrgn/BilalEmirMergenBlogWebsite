@@ -1,7 +1,7 @@
 @model BilalEmirMergenWebsite.Controllers.DashboardViewModel
 @using BilalEmirMergenWebsite.Controllers
 @{ var item = Model.Projects.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Project(); }
-<div class="admin-panel-header"><div><p class="admin-eyebrow">Selected work</p><h2>Projects</h2></div>@if (!string.IsNullOrWhiteSpace(item.Slug)) { <a class="btn" href="/en/projects/@item.Slug" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a> }</div>
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Selected work</p><h2>Projects</h2></div>@if (!string.IsNullOrWhiteSpace(item.Slug)) { <a class="btn" href="/projects/@item.Slug" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a> }</div>
 <partial name="_OrderedTable" model='new OrderedTableViewModel("project", Model.Projects.Select(value => (value.Id, value.TitleEn.Or(value.Title), value.CategoryEn.Or(value.Status), value.SortOrder, value.IsActive)))' />
 <form class="admin-editor admin-form open" method="post" action="/admin/project/save" enctype="multipart/form-data">
     @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="Title" value="@item.Title" /><input type="hidden" name="Description" value="@item.Description" /><input type="hidden" name="ImageUrl" value="@item.ImageUrl" />

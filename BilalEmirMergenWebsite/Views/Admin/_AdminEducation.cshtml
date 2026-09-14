@@ -1,6 +1,6 @@
 @model BilalEmirMergenWebsite.Controllers.DashboardViewModel
 @{ var item = Model.Educations.FirstOrDefault(value => value.Id == Model.EditId) ?? new BilalEmirMergenWebsite.Models.Education { TimelineColor = "#9B6CF0" }; }
-<div class="admin-panel-header"><div><p class="admin-eyebrow">Academic timeline</p><h2>Education</h2></div><a class="btn" href="/en#education" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
+<div class="admin-panel-header"><div><p class="admin-eyebrow">Academic timeline</p><h2>Education</h2></div><a class="btn" href="/#education" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview</a></div>
 <partial name="_OrderedTable" model='new BilalEmirMergenWebsite.Controllers.OrderedTableViewModel("education", Model.Educations.Select(value => (value.Id, value.DegreeEn, value.SchoolName, value.SortOrder, value.IsActive)))' />
 <form class="admin-editor admin-form open" method="post" action="/admin/education/save" enctype="multipart/form-data">
     @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@(Model.EditId is null ? "" : item.Id)" /><input type="hidden" name="LogoUrl" value="@item.LogoUrl" />

@@ -1,0 +1,121 @@
+@model BilalEmirMergenWebsite.Controllers.ProjectListViewModel
+@using BilalEmirMergenWebsite.Controllers
+@{
+    var isTr = Model.IsTr;
+    var culture = Model.Culture;
+}
+
+<div class="portfolio-content" style="padding-top: 40px; padding-bottom: 80px;">
+    <nav class="breadcrumb-nav" style="margin-bottom: 24px;" data-reveal>
+        <a class="back-link" href="/" style="display: inline-flex; align-items: center; gap: 8px; color: var(--copy); font-weight: 600; text-decoration: none;">
+            <i data-lucide="arrow-left"></i>
+            @(isTr ? "Ana Sayfaya Dön" : "Back to Home")
+        </a>
+    </nav>
+
+    <header class="full-list-hero" data-reveal>
+        <span class="full-list-badge"><i data-lucide="folder-git-2"></i> @(isTr ? "Projeler" : "Projects")</span>
+        <h1 style="font: 700 38px/1.15 var(--serif); color: var(--ink); margin-top: 4px;">
+            @(isTr ? "Tüm Projelerim" : "All Projects")
+        </h1>
+        <p style="color: var(--copy); max-width: 680px; margin-top: 10px; font-size: 15px; line-height: 1.6;">
+            @(isTr ? "Geliştirdiğim projeler ve vaka çalışmaları." : "Selected projects and software development work.")
+        </p>
+    </header>
+
+    @if (Model.Projects.Any())
+    {
+        <div class="full-list-grid">
+            @foreach (var item in Model.Projects)
+            {
+                var title = isTr ? item.TitleTr.Or(item.Title).Or(item.TitleEn) : item.TitleEn.Or(item.Title);
+                var category = isTr ? item.CategoryEn.Or(item.Status).Or("Proje") : item.CategoryEn.Or("Project");
+                var summary = isTr ? item.ShortDescriptionTr.Or(item.ShortDescriptionEn).Or(item.DescriptionTr.PlainSummary()) : item.ShortDescriptionEn.Or(item.DescriptionEn.PlainSummary());
+
+                <article class="project-card" data-reveal>
+                    <a class="project-image" href="/projects/@item.Slug" aria-label="View @title case study">
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@title project preview" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div><i data-lucide="code-2"></i><span>@title</span></div>
+                        }
+                        @if (item.IsFeatured)
+                        {
+                            <span class="featured-badge"><i data-lucide="star"></i>Featured</span>
+                        }
+                    </a>
+                    <div class="project-card-body" style="padding: 16px;">
+                        <p class="project-category">@category</p>
+                        <h3 style="font-size: 15px; margin: 8px 0 6px;"><a href="/projects/@item.Slug">@title</a></h3>
+                        <p style="font-size: 11px; line-height: 1.4;">@summary</p>
+                        @if (item.Tags is not null && item.Tags.Any())
+                        {
+                            <div class="tag-list" style="margin-top: 10px; gap: 4px;">
+                                @foreach (var tag in item.Tags.Take(3))
+                                {
+                                    <span style="font-size: 9px; padding: 2px 6px;">@tag</span>
+                                }
+                            </div>
+                        }
+                        <div class="project-links" style="margin-top: 12px;">
+                            <a href="/projects/@item.Slug">@(isTr ? "İncele" : "Case study")<i data-lucide="arrow-up-right"></i></a>
+                            @if (!string.IsNullOrWhiteSpace(item.GitHubUrl))
+                            {
+                                <a href="@item.GitHubUrl" target="_blank" rel="noreferrer" aria-label="GitHub"><i data-lucide="github"></i></a>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.ProjectUrl))
+                            {
+                                <a href="@item.ProjectUrl" target="_blank" rel="noreferrer" aria-label="Live demo"><i data-lucide="external-link"></i></a>
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="pagination-nav" aria-label="Project list pagination">
+                @if (Model.CurrentPage > 1)
+                {
+                    <a href="?page=@(Model.CurrentPage - 1)" aria-label="Previous page">&laquo; @(isTr ? "Önceki" : "Previous")</a>
+                }
+                else
+                {
+                    <span class="page-num disabled">&laquo; @(isTr ? "Önceki" : "Previous")</span>
+                }
+
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    if (p == Model.CurrentPage)
+                    {
+                        <span class="page-num active">@p</span>
+                    }
+                    else
+                    {
+                        <a href="?page=@p">@p</a>
+                    }
+                }
+
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a href="?page=@(Model.CurrentPage + 1)" aria-label="Next page">@(isTr ? "Sonraki" : "Next") &raquo;</a>
+                }
+                else
+                {
+                    <span class="page-num disabled">@(isTr ? "Sonraki" : "Next") &raquo;</span>
+                }
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="empty-state" style="text-align: center; padding: 60px 20px; background: var(--white); border: 1px solid var(--line); border-radius: 8px;">
+            <i data-lucide="folder-git-2" style="width: 48px; height: 48px; color: var(--copy); margin-bottom: 16px;"></i>
+            <h3>@(isTr ? "Henüz eklenmiş proje bulunmuyor." : "No projects available yet.")</h3>
+        </div>
+    }
+</div>

@@ -12,13 +12,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IO.Compression;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtKey = builder.Configuration["Jwt:Key"];
+var usesEphemeralJwtKey = false;
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
-    if (!builder.Environment.IsDevelopment()) throw new InvalidOperationException("Jwt:Key must be configured in production.");
-    jwtKey = "development-only-key-change-before-deployment-2026-bem-portfolio";
+    // The public portfolio and cookie-based admin UI must still be able to start
+    // when the optional bearer API has not been configured yet. The generated
+    // key is cryptographically strong, but tokens will not survive an app recycle.
+    jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+    usesEphemeralJwtKey = true;
     builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["Jwt:Key"] = jwtKey });
 }
 
@@ -69,47 +74,93 @@ builder.Services
         };
     });
 builder.Services.AddAuthorization();
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("DefaultConnection is required.");
+// This deployment intentionally reads its database connection only from
+// appsettings.json, as requested for the target IIS environment.
+var appSettingsConfiguration = new ConfigurationBuilder()
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .Build();
+var connectionString = appSettingsConfiguration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' is required in appsettings.json.");
+}
 builder.Services.AddDbContext<AppDbContext>((services, options) => { options.UseSqlServer(connectionString); if (services.GetRequiredService<IWebHostEnvironment>().IsDevelopment()) options.EnableDetailedErrors(); });
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddSingleton<IPortfolioCacheService, PortfolioCacheService>();
+builder.Services.AddSingleton<IAnalyticsQueue, AnalyticsQueue>();
+builder.Services.AddHostedService<AnalyticsBackgroundProcessor>();
 
 var app = builder.Build();
-if (!app.Environment.IsEnvironment("Testing"))
+if (usesEphemeralJwtKey)
+{
+    app.Logger.LogWarning("Jwt:Key is not configured. A temporary signing key was generated; bearer API tokens will be invalid after an application restart. Configure Jwt__Key in IIS.");
+}
+
+var runDatabaseStartupTasks = builder.Configuration.GetValue("Database:RunStartupTasks", builder.Environment.IsDevelopment());
+if (!app.Environment.IsEnvironment("Testing") && runDatabaseStartupTasks)
 {
     using (var scope = app.Services.CreateScope())
     {
         var database = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         try
         {
-            database.Database.Migrate();
+            var pendingMigrations = await database.Database.GetPendingMigrationsAsync();
+            if (pendingMigrations.Any())
+            {
+                app.Logger.LogInformation("Applying pending database migrations...");
+                await database.Database.MigrateAsync();
+            }
         }
         catch (Exception exception)
         {
-            app.Logger.LogError(exception, "Database migration failed. Existing content bootstrap will still be attempted.");
+            app.Logger.LogError(exception, "Database migration check failed. Existing content bootstrap will still be attempted.");
         }
 
         try
         {
-            await PortfolioSeeder.SeedAsync(database);
-            await EmbeddedImageOptimizer.OptimizeAsync(database, scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>(), app.Logger);
+            var seedDemoContent = builder.Configuration.GetValue<bool>("Database:SeedDemoContent");
+            if (seedDemoContent)
+            {
+                await PortfolioSeeder.SeedAsync(database);
+            }
+
+            var optimizeImagesOnStartup = builder.Configuration.GetValue<bool>("Database:OptimizeImagesOnStartup", false);
+            if (optimizeImagesOnStartup)
+            {
+                await EmbeddedImageOptimizer.OptimizeAsync(database, scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>(), app.Logger);
+            }
+
             var email = builder.Configuration["InitialAdmin:Email"];
             var password = builder.Configuration["InitialAdmin:Password"];
             var username = builder.Configuration["InitialAdmin:Username"] ?? "admin";
             if (!string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(password))
             {
                 var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
-                var admin = database.AdminUsers.FirstOrDefault(user => user.Email == email);
+                var admin = await database.AdminUsers.FirstOrDefaultAsync(user => user.Email == email);
+                var requiresUpdate = false;
+
                 if (admin is null)
                 {
                     admin = new AdminUser { Id = Guid.NewGuid().ToString(), Email = email };
                     database.AdminUsers.Add(admin);
+                    requiresUpdate = true;
                 }
-                admin.Username = username;
-                admin.PasswordHash = passwordService.Hash(password);
-                admin.Role = "Admin";
-                database.SaveChanges();
+
+                if (admin.Username != username || admin.Role != "Admin" || !passwordService.Verify(password, admin.PasswordHash))
+                {
+                    admin.Username = username;
+                    admin.PasswordHash = passwordService.Hash(password);
+                    admin.Role = "Admin";
+                    requiresUpdate = true;
+                }
+
+                if (requiresUpdate)
+                {
+                    await database.SaveChangesAsync();
+                }
             }
         }
         catch (Exception exception) { app.Logger.LogError(exception, "Database bootstrap failed. The app will continue so configuration can be corrected."); }

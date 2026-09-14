@@ -4,7 +4,7 @@
 }
 <header class="cms-page-header dashboard-header">
     <div><p class="cms-eyebrow">Dashboard</p><h1>@greeting</h1><p>Manage your portfolio content from one clear workspace.</p></div>
-    <a class="cms-button secondary" href="/en" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview portfolio</a>
+    <a class="cms-button secondary" href="/" target="_blank" rel="noreferrer"><i data-lucide="eye"></i>Preview portfolio</a>
 </header>
 
 <div class="dashboard-summary-grid">
@@ -28,6 +28,6 @@
     <section class="dashboard-card portfolio-health-card">
         <header><div><p class="cms-eyebrow">Portfolio health</p><h2>At a glance</h2></div></header>
         <dl><div><dt>Published projects</dt><dd>@Model.Projects.Count(item => item.IsActive)</dd></div><div><dt>Published posts</dt><dd>@Model.Articles.Count(item => item.IsActive)</dd></div><div><dt>Technologies</dt><dd>@Model.Skills.Count</dd></div><div><dt>Visits recorded</dt><dd>@Model.SiteVisits</dd></div></dl>
-        <a href="/en" target="_blank" rel="noreferrer">Open public portfolio<i data-lucide="arrow-up-right"></i></a>
+        <a href="/" target="_blank" rel="noreferrer">Open public portfolio<i data-lucide="arrow-up-right"></i></a>
     </section>
 </div>

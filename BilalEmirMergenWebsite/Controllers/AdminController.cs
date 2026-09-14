@@ -18,7 +18,8 @@ public class AdminController : Controller
     private readonly AppDbContext _context;
     private readonly IPasswordService _passwords;
     private readonly IImageService _images;
-    public AdminController(AppDbContext context, IPasswordService passwords, IImageService images) { _context = context; _passwords = passwords; _images = images; }
+    private readonly IPortfolioCacheService _cacheService;
+    public AdminController(AppDbContext context, IPasswordService passwords, IImageService images, IPortfolioCacheService cacheService) { _context = context; _passwords = passwords; _images = images; _cacheService = cacheService; }
 
     [AllowAnonymous, HttpGet("login")] public IActionResult Login() => User.Identity?.IsAuthenticated == true ? RedirectToAction(nameof(Dashboard)) : View();
     [AllowAnonymous, HttpPost("login"), ValidateAntiForgeryToken] public async Task<IActionResult> Login(string email, string password, string? returnUrl = null)
@@ -38,7 +39,7 @@ public class AdminController : Controller
     [HttpGet("localized/{type}/{id}")]
     public async Task<IActionResult> LocalizedValues(string type, string id)
     {
-        object? entity = type switch { "about"=>await _context.AboutSections.FindAsync(id),"academic"=>await _context.AcademicFoundations.FindAsync(id),"experience"=>await _context.Experiences.FindAsync(id),"education"=>await _context.Educations.FindAsync(id),"category"=>await _context.SkillCategories.FindAsync(id),"skill"=>await _context.Skills.FindAsync(id),"concept"=>await _context.EngineeringConcepts.FindAsync(id),"language"=>await _context.SpokenLanguages.FindAsync(id),"project"=>await _context.Projects.FindAsync(id),"article"=>await _context.Articles.FindAsync(id),_=>null};
+        object? entity = type switch { "about"=>await _context.AboutSections.FindAsync(id),"certificate"=>await _context.Certificates.FindAsync(id),"academic"=>await _context.AcademicFoundations.FindAsync(id),"experience"=>await _context.Experiences.FindAsync(id),"education"=>await _context.Educations.FindAsync(id),"category"=>await _context.SkillCategories.FindAsync(id),"skill"=>await _context.Skills.FindAsync(id),"concept"=>await _context.EngineeringConcepts.FindAsync(id),"language"=>await _context.SpokenLanguages.FindAsync(id),"project"=>await _context.Projects.FindAsync(id),"article"=>await _context.Articles.FindAsync(id),_=>null};
         if (entity is null) return NotFound();
         var values = entity.GetType().GetProperties().Where(property=>property.PropertyType == typeof(string) || property.PropertyType == typeof(int) || property.PropertyType == typeof(bool)).ToDictionary(property=>property.Name,property=>property.GetValue(entity)?.ToString()??string.Empty);
         return Json(values);
@@ -55,6 +56,7 @@ public class AdminController : Controller
                 model.Articles = await _context.Articles.AsNoTracking().Select(x=>new Article{Id=x.Id,IsActive=x.IsActive,PublishedAt=x.PublishedAt}).ToListAsync();
                 model.Experiences = await _context.Experiences.AsNoTracking().Select(x=>new Experience{Id=x.Id,CompanyName=x.CompanyName,RoleEn=x.RoleEn,RoleTr=x.RoleTr}).ToListAsync();
                 model.Skills = await _context.Skills.AsNoTracking().Select(x=>new Skill{Id=x.Id,Name=x.Name}).ToListAsync();
+                model.Certificates = await _context.Certificates.AsNoTracking().Select(x=>new Certificate{Id=x.Id,NameEn=x.NameEn,IsActive=x.IsActive}).ToListAsync();
                 model.SiteVisits = await _context.Analytics.AsNoTracking().CountAsync(x=>x.EventType=="site_visit");
                 break;
             case "about": model.AboutSections=await _context.AboutSections.AsNoTracking().OrderBy(x=>x.SortOrder).ToListAsync(); break;
@@ -159,7 +161,37 @@ public class AdminController : Controller
     [HttpPost("language/save"), ValidateAntiForgeryToken] public async Task<IActionResult> SaveLanguage(SpokenLanguage input) => await Upsert(input,_context.SpokenLanguages,"languages");
     [HttpPost("social/save"), ValidateAntiForgeryToken] public async Task<IActionResult> SaveSocial(Social input) => await Upsert(input,_context.Socials,"socials");
     [HttpPost("service/save"), ValidateAntiForgeryToken] public async Task<IActionResult> SaveService(Service input) => await Upsert(input,_context.Services,"services");
-    [HttpPost("certificate/save"), ValidateAntiForgeryToken] public async Task<IActionResult> SaveCertificate(Certificate input) => await Upsert(input,_context.Certificates,"certificates");
+    [HttpPost("certificate/save"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveCertificate(Certificate input, IFormFile? certificateImageFile, IFormFile? organizationLogoFile)
+    {
+        NormalizePostedBooleans(input);
+        input.NormalizeText();
+        if (input.DoesNotExpire) input.ExpirationDate = null;
+        if (!ModelState.IsValid) return Invalid("certificates");
+
+        var existing = string.IsNullOrWhiteSpace(input.Id) ? null : await _context.Certificates.FirstOrDefaultAsync(item => item.Id == input.Id);
+        var entity = existing ?? new Certificate();
+        var oldCertificateImage = entity.CertificateImage;
+        var oldOrganizationLogo = entity.OrganizationLogo;
+        var nextOrder = input.SortOrder > 0 ? input.SortOrder : (await _context.Certificates.MaxAsync(item => (int?)item.SortOrder) ?? 0) + 1;
+
+        _context.Entry(entity).CurrentValues.SetValues(input);
+        entity.Id = existing?.Id ?? Guid.NewGuid().ToString();
+        entity.SortOrder = existing is null ? nextOrder : input.SortOrder;
+        try
+        {
+            entity.CertificateImage = await _images.SaveImageAsync(certificateImageFile, "certificates") ?? input.CertificateImage.Or(oldCertificateImage);
+            entity.OrganizationLogo = await _images.SaveImageAsync(organizationLogoFile, "certificate-organizations") ?? input.OrganizationLogo.Or(oldOrganizationLogo);
+        }
+        catch (InvalidOperationException error)
+        {
+            return Invalid("certificates", error.Message);
+        }
+
+        if (existing is null) _context.Certificates.Add(entity);
+        await _context.SaveChangesAsync();
+        return Saved("certificates", existing is null ? "Certificate added." : "Certificate updated.");
+    }
 
     [HttpPost("project/save"), ValidateAntiForgeryToken]
     public async Task<IActionResult> SaveProject(Project input, string tagsText, IFormFile? imageFile, List<IFormFile>? galleryFiles)
@@ -197,6 +229,7 @@ public class AdminController : Controller
             case "article": await ApplyOrder(_context.Articles,items); break;
             case "social": await ApplyOrder(_context.Socials,items); break;
             case "about": await ApplyOrder(_context.AboutSections,items); break;
+            case "certificate": await ApplyOrder(_context.Certificates,items); break;
             default:return NotFound();
         }
         await _context.SaveChangesAsync();
@@ -227,7 +260,7 @@ public class AdminController : Controller
             property.SetValue(input,values.Any(value=>bool.TryParse(value,out var parsed)&&parsed));
         }
     }
-    private RedirectToActionResult Saved(string tab,string message="Changes saved."){TempData["Success"]=message;return RedirectToAction(nameof(Dashboard),new{tab});}
+    private RedirectToActionResult Saved(string tab,string message="Changes saved."){ _cacheService.InvalidateCache(); TempData["Success"]=message; return RedirectToAction(nameof(Dashboard),new{tab}); }
     private RedirectToActionResult Invalid(string tab,string? message=null){TempData["Error"]=message??string.Join(" ",ModelState.Values.SelectMany(x=>x.Errors).Select(x=>x.ErrorMessage));return RedirectToAction(nameof(Dashboard),new{tab});}
     private static string TabFor(string type)=>type switch{"about"=>"about","service"=>"services","certificate"=>"certificates","academic"=>"academic","experience"=>"experience","education"=>"education","category" or "skill"=>"skills","concept"=>"concepts","language"=>"languages","project"=>"projects","article"=>"articles","social"=>"socials",_=>"overview"};
     private static async Task ApplyOrder<T>(DbSet<T> set,IReadOnlyList<ReorderItem> items) where T:class,IOrderedContent

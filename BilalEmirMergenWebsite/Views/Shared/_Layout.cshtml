@@ -1,5 +1,5 @@
 @using Microsoft.EntityFrameworkCore
-@inject BilalEmirMergenWebsite.Data.AppDbContext LayoutDb
+@inject BilalEmirMergenWebsite.Services.IPortfolioCacheService PortfolioCache
 @{
     var isAdmin = Context.Request.Path.StartsWithSegments("/admin");
     var title = ViewData["Title"]?.ToString() ?? "Bilal Emir Mergen — Software Engineer";
@@ -7,7 +7,7 @@
     var canonical = ViewData["Canonical"]?.ToString();
     var imagePath = ViewData["OgImage"]?.ToString() ?? "/og-portfolio-light.png";
     var ogImage = imagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? imagePath : $"{Context.Request.Scheme}://{Context.Request.Host}{imagePath}";
-    var socials = isAdmin ? new List<BilalEmirMergenWebsite.Models.Social>() : await LayoutDb.Socials.AsNoTracking().Where(item => item.IsActive).OrderBy(item => item.SortOrder).ToListAsync();
+    var socials = isAdmin ? new List<BilalEmirMergenWebsite.Models.Social>() : await PortfolioCache.GetSocialsAsync();
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -38,7 +38,7 @@
 <body class="@(isAdmin ? "admin-body" : "portfolio-body")">
     @if (!isAdmin)
     {
-        <header class="mobile-cv-header"><a class="mobile-brand" href="/en"><span>BM</span>Portfolio</a><button class="mobile-menu" type="button" data-drawer-toggle aria-label="Open navigation" aria-expanded="false"><i data-lucide="menu"></i></button></header>
+        <header class="mobile-cv-header"><a class="mobile-brand" href="/"><span>BM</span>Portfolio</a><button class="mobile-menu" type="button" data-drawer-toggle aria-label="Open navigation" aria-expanded="false"><i data-lucide="menu"></i></button></header>
     }
     <main class="@(isAdmin ? "admin-main" : "portfolio-main")">@RenderBody()</main>
     @if (!isAdmin)
